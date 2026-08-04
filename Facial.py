@@ -1,8 +1,5 @@
 import face_recognition
-import os
 from itertools import combinations
-
-from numpy import rint
 
 caminho = r"C:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\foto1.jpg"
 
