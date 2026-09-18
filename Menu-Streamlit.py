@@ -5,7 +5,7 @@ st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="wide")
 
 # Inicio, Menu, Tirar Foto, Gerar Hash, Comparar Hash
 
-# Aqui iniciamosa st.session_state tela caso não exista, e definimos a tela inicial como "inicio"
+# Aqui iniciamos a st.session_state tela caso não exista, e definimos a tela inicial como "inicio"
 if "tela" not in st.session_state:
     st.session_state.tela = "inicio"
 

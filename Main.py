@@ -1,5 +1,7 @@
 import Facial as face
 import Complementos as comp
+from datetime import datetime
+#print(time.time())
 
 print("""Seja bem vindo ao Face-Guest""")
 
@@ -26,10 +28,12 @@ while menu:
 
         # Captura caminho da imagem
         caminho = input("#> Digite o nome da imagem: ")
-        caminho_completo = rf"c:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\{caminho}"
+        caminho_completo = rf"C:\Users\Stancz1k\Documents\TCC\Face-Guest\Face-Guest\Faciais\{caminho}"
 
         # Chama função gerar hash do módulo Facial
         hash = face.gerar_hash(caminho_completo)
+        with open(rf"C:\Users\Stancz1k\Documents\TCC\Face-Guest\Face-Guest\Hashes\{int(datetime.now().timestamp())}.txt", "w") as arquivo:
+            arquivo.write(str(hash))
 
         print("Hash Facial: ", hash)
         input("Pressione Enter para continuar...")
@@ -44,8 +48,8 @@ while menu:
         caminho2 = input("#> Digite o nome da segunda imagem: ")
 
         # Captura caminho das imagens
-        caminho_completo1 = rf"c:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\{caminho1}"
-        caminho_completo2 = rf"c:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\{caminho2}"
+        caminho_completo1 = rf"C:\Users\Stancz1k\Documents\TCC\Face-Guest\Face-Guest\Faciais\{caminho1}"
+        caminho_completo2 = rf"C:\Users\Stancz1k\Documents\TCC\Face-Guest\Face-Guest\Faciais\{caminho2}"
 
         # Gerar hashes das imagens e compara
         hash1 = face.gerar_hash(caminho_completo1)
