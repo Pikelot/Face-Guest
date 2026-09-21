@@ -1,5 +1,6 @@
 import streamlit as st
 import Complementos as comp
+import Controladora as ctrl
 import Facial as face
 
 st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="centered")
@@ -50,18 +51,39 @@ if st.session_state.tela == "gerar_hash":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    st.write("Tela de Gerar Hash")
-
     resultado = face.gerar_hash(caminho=st.session_state["caminho_face"])
 
     if resultado:
         st.success("Hash gerado com sucesso!")
+        st.session_state.camera_key += 1
+        st.session_state.tela = "gerar_voucher"
+
+        comp.wait(2)
+        st.rerun()
 
     else:
         st.error("Nenhum rosto detectado na imagem. Por favor, tente novamente.")
+        st.session_state.camera_key += 1
+        st.session_state.tela = "inicio"
 
-    comp.wait(2)
+        comp.wait(2)
+        st.rerun()
 
-    st.session_state.camera_key += 1
+if st.session_state.tela == "gerar_voucher":
+
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    voucher = ctrl.Gerar_voucher()
+
+    st.write("")
+
+    col1, col2, col3 = st.columns([1, 20, 1])
+
+    with col2:
+        st.title(voucher)
+        st.subheader("Seu Código de Acesso Único")
+
+    comp.wait(10)
+
     st.session_state.tela = "inicio"
     st.rerun()
