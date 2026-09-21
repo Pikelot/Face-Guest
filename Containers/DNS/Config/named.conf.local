@@ -1,0 +1,6 @@
+zone "faceguest.com" {
+    type master;
+    file "/etc/bind/db.faceguest.com";
+    allow-transfer { any; };
+    allow-query { any; };
+};

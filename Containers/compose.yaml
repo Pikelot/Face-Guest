@@ -1,0 +1,13 @@
+services:    
+  dns:
+    build:
+      context: ./DNS/
+      dockerfile: Dockerfile
+    image: dns
+    container_name: dns
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - ./DNS/Config/db.faceguest.com:/etc/bind/db.faceguest.com
+      - ./DNS/Config/named.conf.local:/etc/bind/named.conf.local
