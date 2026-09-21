@@ -8,7 +8,7 @@ def gerar_hash (caminho):
 
     #Lê a imagem e gera o hash correspondente usando a biblioteca face_recognition
     
-    print("#Facial.py - Lendo imagem e gerando hash facial...")
+    print(f"Facial.py - Lendo imagem e gerando hash facial: {caminho}")
     imagem = face_recognition.load_image_file(caminho)
 
     #Geração do hash facial
@@ -22,13 +22,13 @@ def gerar_hash (caminho):
                     
         with open(f"./Hashes/{nome_hash}", "w") as arquivo_hash:
             arquivo_hash.write(str(hash))
-            print(f"Hash salvo em: ./Hashes/{nome_hash}")
+            print(f"Facial.py - Hash salvo em: ./Hashes/{nome_hash}")
 
-        print("#Facial.py - Hash gerado com sucesso!")
+        print(f"Facial.py - Hash gerado com sucesso!")
         return True
     
     else:
-        print("#Facial.py - Nenhum rosto detectado na imagem.")
+        print(f"Facial.py - Nenhum rosto detectado na imagem.")
         return False
 
 def comparar_hashes(hash1, hash2):
@@ -40,3 +40,5 @@ def comparar_hashes(hash1, hash2):
 
     #Retorna resultado em booleano
     return resultado[0]
+
+#print(comparar_hashes("21092026-100707", "21092026-102709"))
