@@ -5,4 +5,5 @@ Bibliotecas Utilizadas:
 
 - Face-Recognition
 - OS
-
+- Datetime
+- Time
