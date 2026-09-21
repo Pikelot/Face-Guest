@@ -1,26 +1,35 @@
 import face_recognition
+import Complementos as comp
 from itertools import combinations
 
-caminho = r"C:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\foto1.jpg"
+#caminho = r"C:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\foto1.jpg"
 
 def gerar_hash (caminho):
 
     #Lê a imagem e gera o hash correspondente usando a biblioteca face_recognition
     
-    #Leitura da imagem
-    print("Lendo imagem e gerando hash facial...")
+    print("#Facial.py - Lendo imagem e gerando hash facial...")
     imagem = face_recognition.load_image_file(caminho)
 
     #Geração do hash facial
     hash = face_recognition.face_encodings(imagem)
 
+    comp.remover(caminho)
+
     #Retorno dos resultados
     if len(hash) > 0:
-        return hash[0]
-        print("Retornando hash facial gerado com sucesso!")
+        nome_hash = comp.data() + ".txt"
+                    
+        with open(f"./Hashes/{nome_hash}", "w") as arquivo_hash:
+            arquivo_hash.write(str(hash))
+            print(f"Hash salvo em: ./Hashes/{nome_hash}")
+
+        print("#Facial.py - Hash gerado com sucesso!")
+        return True
+    
     else:
-        return hash
-        print("Retornando hash facial gerado com sucesso!")
+        print("#Facial.py - Nenhum rosto detectado na imagem.")
+        return False
 
 def comparar_hashes(hash1, hash2):
 

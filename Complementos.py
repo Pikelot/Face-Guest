@@ -1,6 +1,7 @@
 import os
 import datetime
 import time
+
 def limpar_tela():
     os.system('cls')
 
@@ -11,5 +12,13 @@ def data():
 def wait(tempo):
     # Pausa a execução do programa por 2 segundos
     time.sleep(tempo)
+
+def remover(caminho):
+    # Remove o arquivo especificado pelo caminho
+    if os.path.exists(caminho):
+        os.remove(caminho)
+        print(f"Complementos.py - Arquivo removido: {caminho}")
+    else:
+        print(f"Complementos.py - Arquivo não encontrado: {caminho}")
 
 print(data())
