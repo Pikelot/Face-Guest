@@ -20,5 +20,3 @@ def remover(caminho):
         print(f"Complementos.py - Arquivo removido: {caminho}")
     else:
         print(f"Complementos.py - Arquivo não encontrado: {caminho}")
-
-print(data())

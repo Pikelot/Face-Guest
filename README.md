@@ -7,3 +7,12 @@ Bibliotecas Utilizadas:
 - OS
 - Datetime
 - Time
+
+Requisitos:
+
+python 3,11.
+
+pip install streamlit
+pip install dlib
+pip install setuptools
+pip install face_recognition
