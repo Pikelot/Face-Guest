@@ -10,7 +10,7 @@ Bibliotecas Utilizadas:
 
 Requisitos:
 
-python 3,11.
+python 3.10.
 
 pip install streamlit
 pip install dlib
