@@ -1,55 +1,80 @@
 import face_recognition
 import numpy as np
+import os
 import Complementos as comp
 from itertools import combinations
 
-#caminho = r"C:\Users\joao.victor\Documents\Face-Guest\Face-Guest\Faciais\foto1.jpg"
+def gerar_hash(caminho, ação):
 
-def gerar_hash (caminho):
-
-    #Lê a imagem e gera o hash correspondente usando a biblioteca face_recognition
-    
     print(f"Facial.py - Lendo imagem e gerando hash facial: {caminho}")
-    imagem = face_recognition.load_image_file(caminho)
 
-    #Geração do hash facial
-    hash = face_recognition.face_encodings(imagem)
+    #Verifico se a hash vai ser salva nas hashes padrões ou na pasta da hash de verificação.
+    if ação == 0:
+        pasta = "./Hashes/"
+    elif ação == 1:
+        pasta = "./Hash_comp/"
+
+    imagem = face_recognition.load_image_file(caminho)
+    encodings = face_recognition.face_encodings(imagem)
 
     comp.remover(caminho)
 
-    #Retorno dos resultados
-    if len(hash) > 0:
+    if len(encodings) > 0:
+
+        encoding = encodings[0]
+
         nome_hash = comp.data() + ".txt"
-                    
-        with open(f"./Hashes/{nome_hash}", "w") as arquivo_hash:
-            arquivo_hash.write(str(hash))
-            print(f"Facial.py - Hash salvo em: ./Hashes/{nome_hash}")
 
-        print(f"Facial.py - Hash gerado com sucesso!")
-        return True
-    
+        caminho_hash = f"{pasta}{nome_hash}"
+
+        with open(f"{caminho_hash}", "w") as arquivo_hash:
+            arquivo_hash.write(",".join(map(str, encoding)))
+
+        print(f"Facial.py - Hash salvo em: {caminho_hash}")
+        print("Facial.py - Hash gerado com sucesso!")
+
+        return True, caminho_hash
+
     else:
-        print(f"Facial.py - Nenhum rosto detectado na imagem.")
-        return False
+        print("Facial.py - Nenhum rosto detectado na imagem.")
+        return False, None
 
-def carregar_encoding(caminho_arquivo):
-    with open(caminho_arquivo, 'r') as f:
-        conteudo = f.read()
-    
-    # Remove caracteres do texto como '[array(', ']', ')'
-    limpo = conteudo.replace('[array(', '').replace('array(', '').replace(']', '').replace(')', '').replace('[', '')
-    
-    # Converte os números em um array de floats do NumPy
-    return np.fromstring(limpo, sep=',') if ',' in limpo else np.fromstring(limpo, sep=' ')
+def carregar_hash(caminho):
 
-def comparar_hashes(caminho_hash1, caminho_hash2):
-    # Carrega os vetores numéricos de cada arquivo
-    encoding1 = carregar_encoding(caminho_hash1)
-    encoding2 = carregar_encoding(caminho_hash2)
-    
-    # Compara os dois encodings
-    resultado = face_recognition.compare_faces([encoding1], encoding2)
-    
-    return bool(resultado[0])
+    with open(caminho, "r") as arquivo:
 
-print(comparar_hashes("./Hashes/21092026-112055.txt", "./Hashes/21092026-112238.txt"))
+        valores = arquivo.read().split(",")
+
+    return np.array([float(valor) for valor in valores])
+
+def comparar_hashes(hash_comp):
+    hashes = []
+
+    hash_teste = carregar_hash(hash_comp)
+
+    for arquivo in os.listdir("./Hashes"):
+        hash = carregar_hash(f"./Hashes/{arquivo}")
+
+        resultado = face_recognition.compare_faces(
+            [hash],
+            hash_teste
+        )
+
+        if resultado[0]:
+            hashes.append(arquivo)
+
+    if hashes == []:
+        return "Nenhum rosto encontrado."
+
+    else:
+        
+        for hash in hashes:
+            resultado += str(hash)
+
+        else:
+            resultado = ", ".join(hashes)
+
+            return f"Foram encontrados hashes nos arquivos: {resultado}"
+    
+resultado_hash = comparar_hashes("./Hash_comp/teste.txt")
+print("Resultado do teste com o arquivo teste.txt:", resultado_hash)
