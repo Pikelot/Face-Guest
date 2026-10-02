@@ -24,7 +24,7 @@ if "camera_key" not in st.session_state:
 
 # PROCESSO DE AUTENTICAÇÃO
 
-#Session 1 - Captura a face e envia para a geração de hashes
+#Session 1 - Captura a face e envia para a geração de enconding
 if st.session_state.tela == "inicio":
 
     #Prints de tela atual vão existir por todo o código, para facilitar a visualização de qual tela está ativa no momento
@@ -35,7 +35,7 @@ if st.session_state.tela == "inicio":
     container = st.container
 
     with midcol2:
-        face = st.camera_input("Capture sua foto para gerar o hash facial", key=f"camera_input_{st.session_state.camera_key}")
+        face = st.camera_input("Capture sua foto para gerar o encoding facial", key=f"camera_input_{st.session_state.camera_key}")
 
         if face is not None:
 
@@ -52,24 +52,24 @@ if st.session_state.tela == "inicio":
                 arquivo.write(face.getbuffer())
                 print(f"Menu.py - Facial salva em: {caminho_face}")
 
-            #Mostra sucesso e espera um tempo de 2 segundos, depois vai para a sessão de geração de hash
+            #Mostra sucesso e espera um tempo de 2 segundos, depois vai para a sessão de geração do encoding
             st.success("Foto salva!")
             comp.wait(2)
 
             face = ""
 
-            st.session_state.tela = "gerar_hash"
+            st.session_state.tela = "gerar_encoding"
             st.rerun()
 
-#Session 2 - Gera os hashes e redireciona para a geração de Vouchers ou retorna para o inicio se erro
-if st.session_state.tela == "gerar_hash":
+#Session 2 - Gera os encodings e redireciona para a geração de Vouchers ou retorna para o inicio se erro
+if st.session_state.tela == "gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.gerar_hash(caminho=st.session_state["caminho_face"], ação=0)
+    resultado = face.gerar_encoding(caminho=st.session_state["caminho_face"], ação=0)
 
     if resultado[0]:
-        st.success("Hash gerado com sucesso!")
+        st.success("Encoding gerado com sucesso!")
         st.session_state.camera_key += 1
         st.session_state.tela = "gerar_voucher"
 
@@ -107,7 +107,7 @@ if st.session_state.tela == "gerar_voucher":
 
 # PROCESSO DE VERIFICAÇÃO
 
-#Session 4 - Captura a face e envia para a geração de hashes
+#Session 4 - Captura a face e envia para a geração de encodings
 if st.session_state.tela == "inicio_verificar_face":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -136,30 +136,30 @@ if st.session_state.tela == "inicio_verificar_face":
                 arquivo.write(face.getbuffer())
                 print(f"Menu.py - Facial salva em: {caminho_face}")
 
-            #Mostra sucesso e espera um tempo de 2 segundos, depois vai para a sessão de geração de hash
+            #Mostra sucesso e espera um tempo de 2 segundos, depois vai para a sessão de geração de encoding
             st.success("Foto salva!")
             comp.wait(2)
 
             face = ""
 
             #Aqui vamos para a session de número #4
-            st.session_state.tela = "verificar_gerar_hash"
+            st.session_state.tela = "verificar_gerar_encoding"
             st.rerun()
 
-#Session 5 - Gera os hashes e redireciona para a comparação dos hashes ou retorna para o inicio se erro
-if st.session_state.tela == "verificar_gerar_hash":
+#Session 5 - Gera os encodings e redireciona para a comparação dos encodings ou retorna para o inicio se erro
+if st.session_state.tela == "verificar_gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.gerar_hash(caminho=st.session_state["caminho_face"], ação=1)
+    resultado = face.gerar_encoding(caminho=st.session_state["caminho_face"], ação=1)
     
     if resultado[0]:
-        st.success("Hash gerado com sucesso!")
+        st.success("Encoding gerado com sucesso!")
         st.session_state.camera_key += 1
 
-        st.session_state["caminho_hash"] = resultado[1]
+        st.session_state["caminho_encoding"] = resultado[1]
 
-        st.session_state.tela = "comparar_hash"
+        st.session_state.tela = "comparar_encoding"
 
         comp.wait(2)
         st.rerun()
@@ -172,12 +172,12 @@ if st.session_state.tela == "verificar_gerar_hash":
         comp.wait(2)
         st.rerun()
 
-#Session 6 - Compara os hashes e retorna o resultado para o usuário depois retorna para o inicio WIP
-if st.session_state.tela == "comparar_hash":
+#Session 6 - Compara os encodings e retorna o resultado para o usuário depois retorna para o inicio WIP
+if st.session_state.tela == "comparar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.comparar_hashes(st.session_state["caminho_hash"])
+    resultado = face.comparar_encodings(st.session_state["caminho_encoding"])
 
     st.success(resultado)
 

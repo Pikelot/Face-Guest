@@ -4,15 +4,15 @@ import os
 import Complementos as comp
 from itertools import combinations
 
-def gerar_hash(caminho, ação):
+def gerar_encoding(caminho, ação):
 
-    print(f"Facial.py - Lendo imagem e gerando hash facial: {caminho}")
+    print(f"Facial.py - Lendo imagem e gerando encoding facial: {caminho}")
 
-    #Verifico se a hash vai ser salva nas hashes padrões ou na pasta da hash de verificação.
+    #Verifico se a encoding vai ser salva nas encoding padrões ou na pasta da encoding de verificação.
     if ação == 0:
-        pasta = "./Hashes/"
+        pasta = "./encodings/"
     elif ação == 1:
-        pasta = "./Hash_comp/"
+        pasta = "./encoding_comp/"
 
     imagem = face_recognition.load_image_file(caminho)
     encodings = face_recognition.face_encodings(imagem)
@@ -23,23 +23,23 @@ def gerar_hash(caminho, ação):
 
         encoding = encodings[0]
 
-        nome_hash = comp.data() + ".txt"
+        nome_encoding = comp.data() + ".txt"
 
-        caminho_hash = f"{pasta}{nome_hash}"
+        caminho_encoding = f"{pasta}{nome_encoding}"
 
-        with open(f"{caminho_hash}", "w") as arquivo_hash:
-            arquivo_hash.write(",".join(map(str, encoding)))
+        with open(f"{caminho_encoding}", "w") as arquivo_encoding:
+            arquivo_encoding.write(",".join(map(str, encoding)))
 
-        print(f"Facial.py - Hash salvo em: {caminho_hash}")
-        print("Facial.py - Hash gerado com sucesso!")
+        print(f"Facial.py - encoding salvo em: {caminho_encoding}")
+        print("Facial.py - encoding gerado com sucesso!")
 
-        return True, caminho_hash
+        return True, caminho_encoding
 
     else:
         print("Facial.py - Nenhum rosto detectado na imagem.")
         return False, None
 
-def carregar_hash(caminho):
+def carregar_encoding(caminho):
 
     with open(caminho, "r") as arquivo:
 
@@ -47,34 +47,34 @@ def carregar_hash(caminho):
 
     return np.array([float(valor) for valor in valores])
 
-def comparar_hashes(hash_comp):
-    hashes = []
+def comparar_encodings(encoding_comp):
+    encodings = []
 
-    hash_teste = carregar_hash(hash_comp)
+    encoding_teste = carregar_encoding(encoding_comp)
 
-    for arquivo in os.listdir("./Hashes"):
-        hash = carregar_hash(f"./Hashes/{arquivo}")
+    for arquivo in os.listdir("./Encodings"):
+        encoding = carregar_encoding(f"./Encodings/{arquivo}")
 
         resultado = face_recognition.compare_faces(
-            [hash],
-            hash_teste
+            [encoding],
+            encoding_teste
         )
 
         if resultado[0]:
-            hashes.append(arquivo)
+            encodings.append(arquivo)
 
-    if hashes == []:
+    if encodings == []:
         return "Nenhum rosto encontrado."
 
     else:
         
-        for hash in hashes:
-            resultado += str(hash)
+        for encoding in encodings:
+            resultado += str(encoding) + ", "
 
         else:
-            resultado = ", ".join(hashes)
+            resultado = ", ".join(encodings)
 
-            return f"Foram encontrados hashes nos arquivos: {resultado}"
+            return f"Foram encontrados encodings nos arquivos: {resultado}"
     
-resultado_hash = comparar_hashes("./Hash_comp/teste.txt")
-print("Resultado do teste com o arquivo teste.txt:", resultado_hash)
+resultado_encoding = comparar_encodings("./encoding_comp/teste.txt")
+print("Resultado do teste com o arquivo teste.txt:", resultado_encoding)
