@@ -1,80 +1,76 @@
 import face_recognition
-import numpy as np
-import os
+import DB_Chroma as chroma
+import DB_SQL as sql
 import Complementos as comp
-from itertools import combinations
 
-def gerar_encoding(caminho, ação):
+#Propósito> Gera o encoding facial a partir da imagem capturada e salva no banco de dados #Retorno> True e ID da pessoa se sucesso, False e None se falha
+
+def gerar_encoding(caminho):
 
     print(f"Facial.py - Lendo imagem e gerando encoding facial: {caminho}")
 
-    #Verifico se a encoding vai ser salva nas encoding padrões ou na pasta da encoding de verificação.
-    if ação == 0:
-        pasta = "./encodings/"
-    elif ação == 1:
-        pasta = "./encoding_comp/"
-
+    #Caminho onde a imagem é salva
     imagem = face_recognition.load_image_file(caminho)
+
+    #Encodings faciais encontrados na imagem
     encodings = face_recognition.face_encodings(imagem)
 
+    #Removendo a imagem após gerar o encoding
     comp.remover(caminho)
+
+    #Se enconding for maior que 0 salvo o encoding
 
     if len(encodings) > 0:
 
         encoding = encodings[0]
 
-        nome_encoding = comp.data() + ".txt"
+        pessoa_id = chroma.comparar_encoding(encoding)
 
-        caminho_encoding = f"{pasta}{nome_encoding}"
 
-        with open(f"{caminho_encoding}", "w") as arquivo_encoding:
-            arquivo_encoding.write(",".join(map(str, encoding)))
+        if pessoa_id is None:
+            pessoa_id = sql.inserir_pessoa()
+            chroma.adicionar_encoding(pessoa_id, encoding)
+            print("Facial.py - encoding criado e salvo com sucesso!")
+            return True, pessoa_id
 
-        print(f"Facial.py - encoding salvo em: {caminho_encoding}")
+        print(f"Facial.py - encoding criado salvo com o ID: {pessoa_id}")
         print("Facial.py - encoding gerado com sucesso!")
 
-        return True, caminho_encoding
+        return True, pessoa_id
 
     else:
         print("Facial.py - Nenhum rosto detectado na imagem.")
         return False, None
 
-def carregar_encoding(caminho):
+def gerar_encoding_comparação(caminho):
 
-    with open(caminho, "r") as arquivo:
+    print(f"Facial.py - Lendo imagem e gerando encoding facial: {caminho}")
 
-        valores = arquivo.read().split(",")
+    #Caminho onde a imagem é salva
+    imagem = face_recognition.load_image_file(caminho)
 
-    return np.array([float(valor) for valor in valores])
+    #Encodings faciais encontrados na imagem
+    encodings = face_recognition.face_encodings(imagem)
 
-def comparar_encodings(encoding_comp):
-    encodings = []
+    #Removendo a imagem após gerar o encoding
+    comp.remover(caminho)
 
-    encoding_teste = carregar_encoding(encoding_comp)
+    #Se enconding for maior que 0 comparo o encoding com os encodings salvos no banco de dados
 
-    for arquivo in os.listdir("./Encodings"):
-        encoding = carregar_encoding(f"./Encodings/{arquivo}")
+    if len(encodings) > 0:
 
-        resultado = face_recognition.compare_faces(
-            [encoding],
-            encoding_teste
-        )
+        encoding = encodings[0]
 
-        if resultado[0]:
-            encodings.append(arquivo)
+        pessoa_id = chroma.comparar_encoding(encoding)
 
-    if encodings == []:
-        return "Nenhum rosto encontrado."
+        if pessoa_id is not None:
+            print(f"Facial.py - encoding encontrado com o ID: {pessoa_id}")
+            print("Facial.py - encoding comparado com sucesso!")
+            return True, pessoa_id
+        else:
+            print("Facial.py - Nenhum encoding correspondente encontrado.")
+            return False, None
 
     else:
-        
-        for encoding in encodings:
-            resultado += str(encoding) + ", "
-
-        else:
-            resultado = ", ".join(encodings)
-
-            return f"Foram encontrados encodings nos arquivos: {resultado}"
-    
-resultado_encoding = comparar_encodings("./encoding_comp/teste.txt")
-print("Resultado do teste com o arquivo teste.txt:", resultado_encoding)
+        print("Facial.py - Nenhum rosto detectado na imagem.")
+        return False, None

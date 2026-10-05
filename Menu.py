@@ -2,8 +2,11 @@ import streamlit as st
 import Complementos as comp
 import Controladora as ctrl
 import Facial as face
+import DB_SQL as sql
 
 st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="centered")
+
+sql.criar_tabela()
 
 # Aqui iniciamos a st.session_state tela caso não exista, e definimos a tela inicial como "inicio"
 if "tela" not in st.session_state:
@@ -35,6 +38,7 @@ if st.session_state.tela == "inicio":
     container = st.container
 
     with midcol2:
+
         face = st.camera_input("Capture sua foto para gerar o encoding facial", key=f"camera_input_{st.session_state.camera_key}")
 
         if face is not None:
@@ -66,7 +70,8 @@ if st.session_state.tela == "gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.gerar_encoding(caminho=st.session_state["caminho_face"], ação=0)
+    resultado = face.gerar_encoding(caminho=st.session_state["caminho_face"])
+    st.session_state["id"] = resultado[1]
 
     if resultado[0]:
         st.success("Encoding gerado com sucesso!")
@@ -84,13 +89,14 @@ if st.session_state.tela == "gerar_encoding":
         comp.wait(2)
         st.rerun()
 
-#Session 3 - Gera os Vouchers e retorna para o inicio
+#Session 3 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
 
 if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
     voucher = ctrl.Gerar_voucher()
+    ip = ctrl.IP()
 
     st.write("")
 
@@ -101,6 +107,9 @@ if st.session_state.tela == "gerar_voucher":
         st.subheader("Seu Código de Acesso Único")
 
     comp.wait(10)
+
+    sql.registrar_conexao(st.session_state["id"], ip, voucher)
+    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {ip}")
 
     st.session_state.tela = "inicio"
     st.rerun()
@@ -151,15 +160,18 @@ if st.session_state.tela == "verificar_gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.gerar_encoding(caminho=st.session_state["caminho_face"], ação=1)
+    #Gera o resultado da comparação entre os dois encodings, [0] é o booleano e [1] é o ID da pessoa encontrada no banco de dados
+
+    resultado = face.gerar_encoding_comparação(caminho=st.session_state["caminho_face"])
     
     if resultado[0]:
-        st.success("Encoding gerado com sucesso!")
+
+        st.success("Encoding gerado com sucesso e Facial encontrada!")
         st.session_state.camera_key += 1
 
-        st.session_state["caminho_encoding"] = resultado[1]
+        st.session_state["id"] = resultado[1]
 
-        st.session_state.tela = "comparar_encoding"
+        st.session_state.tela = "retornar_encoding"
 
         comp.wait(2)
         st.rerun()
@@ -167,21 +179,36 @@ if st.session_state.tela == "verificar_gerar_encoding":
     else:
         st.error("Nenhum rosto detectado na imagem. Por favor, tente novamente.")
         st.session_state.camera_key += 1
-        st.session_state.tela = "inicio_verififcar_face"
+        st.session_state.tela = "inicio_verificar_face"
 
         comp.wait(2)
         st.rerun()
 
-#Session 6 - Compara os encodings e retorna o resultado para o usuário depois retorna para o inicio WIP
-if st.session_state.tela == "comparar_encoding":
+#Session 6 - retorna o resultado para o usuário depois retorna para o inicio WIP
+if st.session_state.tela == "retornar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    resultado = face.comparar_encodings(st.session_state["caminho_encoding"])
+    resultado = sql.buscar_conexoes(st.session_state["id"])
 
-    st.success(resultado)
+    st.success("Facial encontrada! Dados do usuário: ")
 
-    comp.wait(5)
+    print(f"Menu.py - Resultado: {resultado}")
+
+    if resultado:
+
+        for conexao in resultado:
+            st.write("IP:", conexao[0])
+            st.write("Voucher:", conexao[1])
+            st.write("Data:", conexao[2])
+
+            comp.wait(20)
+
+        else:
+
+            st.write("Nenhuma conexão registrada para esta pessoa.")
+
+            comp.wait(2)
 
     st.session_state.tela = "inicio_verificar_face"
     st.rerun()

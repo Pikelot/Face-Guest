@@ -1,38 +1,91 @@
 import sqlite3
 
+#Nomenclatura do banco
+
+banco = "face_guest.db"
+
+#Propósito> Função de conexão com o banco de dados SQLite #Retorno> Conexão estabelecida
+
+def conectar():
+    return sqlite3.connect(banco)
+
+#Propósito> Criação das tabelas pessoas e conexoes #Retorno> Nenhum
 
 def criar_tabela():
-    conexao = sqlite3.connect('face_guest.db')
+    conexao = conectar()
     cursor = conexao.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS pessoas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS conexoes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            ip TEXT,
-            voucher TEXT
+            pessoa_id INTEGER NOT NULL,
+            ip TEXT NOT NULL,
+            voucher TEXT NOT NULL,
+            data_conexao DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (pessoa_id)
+                REFERENCES pessoas(id)
         )
     """)
 
     conexao.commit()
     conexao.close()
 
-criar_tabela()
+#Propósito> Insere o usuário e retorna ID #Retorno> ID da pessoa inserida #Retorno> Nenhum
 
-def inserir_pessoa(nome, ip, voucher):
-    conexao = sqlite3.connect('face_guest.db')
+def inserir_pessoa():
+
+    conexao = conectar()
     cursor = conexao.cursor()
 
     cursor.execute("""
-        INSERT INTO pessoas (nome, ip, voucher)
-        VALUES (?, ?, ?)
-    """, (nome, ip, voucher))
+        INSERT INTO pessoas DEFAULT VALUES
+    """)
+
+    pessoa_id = cursor.lastrowid
 
     conexao.commit()
     conexao.close()
 
-nome = input("Digite o nome da pessoa: ")
-ip = input("Digite o IP da pessoa: ")
-voucher = input("Digite o voucher da pessoa: ")
+    return pessoa_id
 
-inserir_pessoa(nome, ip, voucher)
+#Propósito> Registra a conexão do usuário com o IP e voucher gerado #Retorno> Nenhum
+
+def registrar_conexao(pessoa_id, ip, voucher):
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        INSERT INTO conexoes (pessoa_id, ip, voucher)
+        VALUES (?, ?, ?)
+    """, (pessoa_id, ip, voucher))
+
+    conexao.commit()
+    conexao.close()
+
+#Propósito> Buscar conexões #Retorno> Lista de conexões
+
+def buscar_conexoes(pessoa_id):
+
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT ip, voucher, data_conexao
+        FROM conexoes
+        WHERE pessoa_id = ?
+        ORDER BY data_conexao DESC
+    """, (pessoa_id,))
+
+    conexoes = cursor.fetchall()
+
+    conexao.close()
+
+    return conexoes
