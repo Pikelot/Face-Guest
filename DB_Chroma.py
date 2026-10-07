@@ -40,7 +40,7 @@ def comparar_encoding(encoding_comp):
 
     print("DB_Chroma.py - Distância:", distancia)
 
-    if distancia > 0.4:
+    if distancia > 0.2:
         return None
 
     return int(results["ids"][0][0])
