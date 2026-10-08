@@ -1,0 +1,1 @@
+Fiz algumas alterações. Os testes com a biblioteca unifi_controller_api tiveram um sucesso moderado. Agora utilizarei a pyunifi.

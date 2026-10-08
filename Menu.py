@@ -6,6 +6,141 @@ import DB_SQL as sql
 
 st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="centered")
 
+# ---------- ESTILO VISUAL (somente aparência) ----------
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap');
+
+html, body, [class*="css"], .stApp {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Fundo com gradiente suave */
+.stApp {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
+    color: #e2e8f0;
+}
+
+/* Esconde elementos padrão do Streamlit */
+#MainMenu, footer { visibility: hidden; }
+[data-testid="stHeader"] { background: transparent; }
+
+/* Container principal */
+.block-container {
+    padding-top: 3rem;
+    max-width: 760px;
+}
+
+/* ---------- SIDEBAR ---------- */
+[data-testid="stSidebar"] {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(148, 163, 184, 0.15);
+}
+[data-testid="stSidebar"] [role="radiogroup"] { gap: 0.5rem; }
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
+    padding: 0.7rem 0.9rem;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: rgba(129, 140, 248, 0.6);
+    transform: translateX(3px);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
+    border-color: #818cf8;
+}
+
+/* ---------- CÂMERA ---------- */
+[data-testid="stCameraInput"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 20px;
+    padding: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+[data-testid="stCameraInput"] label p {
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+    color: #c7d2fe;
+}
+[data-testid="stCameraInput"] video,
+[data-testid="stCameraInput"] img {
+    border-radius: 14px;
+}
+
+/* ---------- BOTÕES ---------- */
+.stButton > button,
+[data-testid="stCameraInput"] button {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+}
+.stButton > button:hover,
+[data-testid="stCameraInput"] button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(99, 102, 241, 0.6);
+    color: #fff;
+}
+
+/* ---------- ALERTAS (sucesso / erro) ---------- */
+[data-testid="stAlert"] {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    animation: surgir 0.4s ease;
+}
+
+/* ---------- TELA DO VOUCHER ---------- */
+h1 {
+    font-family: 'JetBrains Mono', monospace !important;
+    text-align: center;
+    font-size: 3rem !important;
+    letter-spacing: 0.25rem;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25));
+    border: 2px dashed #818cf8;
+    border-radius: 20px;
+    padding: 1.5rem 1rem !important;
+    margin-top: 1rem;
+    text-shadow: 0 0 20px rgba(129, 140, 248, 0.8);
+    animation: surgir 0.6s ease, brilho 2.5s ease-in-out infinite;
+}
+h3 {
+    text-align: center;
+    color: #a5b4fc;
+    font-weight: 500;
+}
+
+/* ---------- TELA DE HISTÓRICO ---------- */
+[data-testid="stMarkdownContainer"] p {
+    line-height: 1.6;
+}
+
+/* ---------- ANIMAÇÕES ---------- */
+@keyframes surgir {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes brilho {
+    0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+    50%      { box-shadow: 0 0 35px rgba(139, 92, 246, 0.7); }
+}
+</style>
+""", unsafe_allow_html=True)
+# ---------- FIM DO ESTILO ----------
+
 sql.criar_tabela()
 
 # Aqui iniciamos a st.session_state tela caso não exista, e definimos a tela inicial como "inicio"
@@ -185,30 +320,48 @@ if st.session_state.tela == "verificar_gerar_encoding":
         st.rerun()
 
 #Session 6 - retorna o resultado para o usuário depois retorna para o inicio WIP
+#Session 6 - retorna o resultado para o usuário depois retorna para o inicio
 if st.session_state.tela == "retornar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
     resultado = sql.buscar_conexoes(st.session_state["id"])
 
-    st.success("Facial encontrada! Dados do usuário: ")
-
     print(f"Menu.py - Resultado: {resultado}")
 
     if resultado:
 
-        for conexao in resultado:
-            st.write("IP:", conexao[0])
-            st.write("Voucher:", conexao[1])
-            st.write("Data:", conexao[2])
+        st.success("Facial encontrada!")
 
-            comp.wait(20)
+        st.metric("Usuário ID", st.session_state["id"])
+        st.metric("Conexões registradas", len(resultado))
 
-        else:
+        # Tabela com todas as conexões de uma vez
+        import pandas as pd
+        df = pd.DataFrame(resultado, columns=["IP", "Voucher", "Data"])
 
-            st.write("Nenhuma conexão registrada para esta pessoa.")
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "IP": st.column_config.TextColumn("🌐 IP"),
+                "Voucher": st.column_config.TextColumn("🎟️ Voucher"),
+                "Data": st.column_config.TextColumn("📅 Data"),
+            },
+        )
 
-            comp.wait(2)
+        st.write("")
 
-    st.session_state.tela = "inicio_verificar_face"
-    st.rerun()
+        if st.button("🔄 Nova verificação", use_container_width=True):
+            st.session_state.tela = "inicio_verificar_face"
+            st.rerun()
+
+    else:
+
+        st.warning("Facial encontrada, mas nenhuma conexão foi registrada para esta pessoa.")
+
+        comp.wait(3)
+
+        st.session_state.tela = "inicio_verificar_face"
+        st.rerun()
