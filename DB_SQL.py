@@ -26,6 +26,8 @@ def criar_tabela():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pessoa_id INTEGER NOT NULL,
             ip TEXT NOT NULL,
+            mac TEXT NOT NULL,
+            hostname TEXT NOT NULL,
             voucher TEXT NOT NULL,
             data_conexao DATETIME DEFAULT CURRENT_TIMESTAMP,
 
@@ -57,15 +59,15 @@ def inserir_pessoa():
 
 #Propósito> Registra a conexão do usuário com o IP e voucher gerado #Retorno> Nenhum
 
-def registrar_conexao(pessoa_id, ip, voucher):
+def registrar_conexao(pessoa_id, ip, voucher, hostname, mac):
 
     conexao = conectar()
     cursor = conexao.cursor()
 
     cursor.execute("""
-        INSERT INTO conexoes (pessoa_id, ip, voucher)
-        VALUES (?, ?, ?)
-    """, (pessoa_id, ip, voucher))
+        INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac)
+        VALUES (?, ?, ?, ?, ?)
+    """, (pessoa_id, ip, voucher, hostname, mac))
 
     conexao.commit()
     conexao.close()

@@ -1,19 +1,40 @@
-import random
+from pyunifi.controller import Controller
 
-def Gerar_voucher():
-    # Função para gerar um voucher único
-    import string
+#Conexão e Autenticação
+c = Controller(
+    host='',
+    username=input('Digite seu usuário: '),
+    password=input('Digite sua senha: '),
+    port=8443,
+    version='v5',       # Funciona para versões 5, 6 e 7 do UniFi Controller
+    site_id='default',  # Nome do site (padrão: 'default')
+    ssl_verify=False
+)
 
-    # Gera um código aleatório de 5 caracteres
-    voucher = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    
-    return voucher
+def Gerar_voucher(USER_ID):
+    vouchers = c.create_voucher(
+        expire=60,       # 1 hora de validade
+        number=1,            # Gerar 1 voucher
+        quota=1,            # 1 = dispositivo único, 0 = multiuso
+        note=USER_ID
+    )
 
-def IP():
-    # Função para gerar um ip de conexão
-    
-    ip_base = "192.168.0."
-    ip_final = random.randint(1, 254)
-    ip = ip_base + str(ip_final)
+        # Retorna diretamente o código do voucher criado
+    for v in vouchers:
+        code_voucher = v.get("code")
+        time_voucher = v.get("create_time")
 
-    return ip
+    return code_voucher, time_voucher
+
+def IP(voucher_code):
+    # Função para pegar o ip de conexão
+    dispositivo = c._api_read("stat/guest", params={"voucher": voucher_code})
+
+    #dados
+    ip = dispositivo[0].get("ip")
+    hostname = dispositivo[0].get("hostname")
+    mac = dispositivo[0].get("mac")
+
+    return ip, hostname, mac
+
+# Por enquanto não tá funcionando, mas futuramente vai ser implementado, houve um problema, não sei se foi ocasionado por esta conexão.

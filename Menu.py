@@ -230,8 +230,7 @@ if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    voucher = ctrl.Gerar_voucher()
-    ip = ctrl.IP()
+    voucher = ctrl.Gerar_voucher(st.session_state["id"])[0]
 
     st.write("")
 
@@ -241,10 +240,11 @@ if st.session_state.tela == "gerar_voucher":
         st.title(voucher)
         st.subheader("Seu Código de Acesso Único")
 
-    comp.wait(10)
+    comp.wait(20)
 
-    sql.registrar_conexao(st.session_state["id"], ip, voucher)
-    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {ip}")
+    dispositivo = ctrl.IP(voucher)
+    sql.registrar_conexao(st.session_state["id"], dispositivo[0], voucher, dispositivo[1], dispositivo[2])
+    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {dispositivo[0]}, Hostname: {dispositivo[1]}, MAC: {dispositivo[2]}")
 
     st.session_state.tela = "inicio"
     st.rerun()
@@ -319,7 +319,6 @@ if st.session_state.tela == "verificar_gerar_encoding":
         comp.wait(2)
         st.rerun()
 
-#Session 6 - retorna o resultado para o usuário depois retorna para o inicio WIP
 #Session 6 - retorna o resultado para o usuário depois retorna para o inicio
 if st.session_state.tela == "retornar_encoding":
 
