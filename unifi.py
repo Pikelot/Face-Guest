@@ -1,35 +1,40 @@
 from pyunifi.controller import Controller
 
-# 1. Conexão e Autenticação
+#Conexão e Autenticação
 c = Controller(
     host='',
-    username=input('Digite seu nome de usuário: '),
+    username=input('Digite seu usuário: '),
     password=input('Digite sua senha: '),
     port=8443,
     version='v5',       # Funciona para versões 5, 6 e 7 do UniFi Controller
     site_id='default',  # Nome do site (padrão: 'default')
     ssl_verify=False
 )
-    
-# 2. Gerar Voucher (Método Nativo)
-vouchers = c.create_voucher(
-    expire=1440,       # 24 horas de validade (1440 min)
-    number=1,            # Gerar 1 voucher
-    quota=1,            # 1 = dispositivo único, 0 = multiuso
-    note=input('Digite a nota do voucher: ')
-)
 
-# Retorna diretamente o código do voucher criado
-for v in vouchers:
-    print(f"Voucher Gerado: {v.get('code')} | Criado em: {v.get('create_time')}")
+def Gerar_voucher(USER_ID):
+    vouchers = c.create_voucher(
+        expire=60,       # 1 hora de validade
+        number=1,            # Gerar 1 voucher
+        quota=1,            # 1 = dispositivo único, 0 = multiuso
+        note=USER_ID
+    )
 
-print("-" * 40)
+        # Retorna diretamente o código do voucher criado
+    for v in vouchers:
+        code_voucher = v.get("code")
+        time_voucher = v.get("create_time")
 
-# 3. Listar Dispositivos (APs, Switches, Roteadores)
-devices = c.get_aps()
-for dev in devices:
-    nome = dev.get('name') or dev.get('hostname') or 'Sem Nome'
-    ip = dev.get('ip', 'N/A')
-    mac = dev.get('mac', 'N/A')
-    print(f"Dispositivo: {nome} | IP: {ip} | MAC: {mac}")
+    return code_voucher, time_voucher
 
+def IP(voucher_code):
+    # Função para pegar o ip de conexão
+    dispositivo = c._api_read("stat/guest", params={"voucher": voucher_code})
+
+    #dados
+    ip = dispositivo[0].get("ip")
+    hostname = dispositivo[0].get("hostname")
+    mac = dispositivo[0].get("mac")
+
+    return ip, hostname, mac
+
+Gerar_voucher("teste")
