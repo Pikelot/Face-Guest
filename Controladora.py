@@ -1,17 +1,25 @@
+from flask import json
 from pyunifi.controller import Controller
 
-#Conexão e Autenticação
-c = Controller(
-    host='',
-    username=input('Digite seu usuário: '),
-    password=input('Digite sua senha: '),
-    port=8443,
-    version='v5',       # Funciona para versões 5, 6 e 7 do UniFi Controller
-    site_id='default',  # Nome do site (padrão: 'default')
-    ssl_verify=False
-)
+def Conectar():
+    # Conexão e Autenticação
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    c = Controller(
+        host=config['servidor'],
+        username=config['usuario'],
+        password=config['senha'],
+        port=config['porta'],
+        version=config['version'],
+        site_id=config['site_id'],
+        ssl_verify=config['ssl_verify']
+    )
+    return c
 
 def Gerar_voucher(USER_ID):
+    
+    c = Conectar()
     vouchers = c.create_voucher(
         expire=60,       # 1 hora de validade
         number=1,            # Gerar 1 voucher
@@ -27,6 +35,8 @@ def Gerar_voucher(USER_ID):
     return code_voucher, time_voucher
 
 def IP(voucher_code):
+
+    c = Conectar()
     # Função para pegar o ip de conexão
     dispositivo = c._api_read("stat/guest", params={"voucher": voucher_code})
 
