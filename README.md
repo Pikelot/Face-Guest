@@ -29,16 +29,11 @@ venv\Scripts\activate        # Windows
 
 # 3. Instale as dependências
 pip install -r requirements.txt
-```
 
-Conteúdo sugerido para o `requirements.txt`:
-
-```text
 streamlit
 setuptools
 dlib
 face_recognition
-```
 
 > Instale o Visual Studio Build Tools **antes** do passo 3, senão o `dlib` falha ao compilar.
 
@@ -57,10 +52,8 @@ Em seguida, edite o `config.json` com os valores do seu ambiente.
 ## Como executar
 
 ```bash
-streamlit run app.py
+streamlit run Menu.py
 ```
-
-(Troque `app.py` pelo nome do arquivo principal do projeto.)
 
 ## Bibliotecas utilizadas
 
