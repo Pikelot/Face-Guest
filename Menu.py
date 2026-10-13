@@ -230,7 +230,8 @@ if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    voucher = ctrl.Gerar_voucher(st.session_state["id"])[0]
+    voucher = ctrl.Gerar_voucher()
+    ip = ctrl.IP()
 
     st.write("")
 
@@ -240,14 +241,14 @@ if st.session_state.tela == "gerar_voucher":
         st.title(voucher)
         st.subheader("Seu Código de Acesso Único")
 
-    comp.wait(20)
+    comp.wait(10)
 
-    dispositivo = ctrl.IP(voucher)
-    sql.registrar_conexao(st.session_state["id"], dispositivo[0], voucher, dispositivo[1], dispositivo[2])
-    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {dispositivo[0]}, Hostname: {dispositivo[1]}, MAC: {dispositivo[2]}")
+    sql.registrar_conexao(st.session_state["id"], ip, voucher)
+    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {ip}")
 
     st.session_state.tela = "inicio"
     st.rerun()
+
 
 # PROCESSO DE VERIFICAÇÃO
 
