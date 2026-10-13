@@ -1,0 +1,219 @@
+FACE-GUEST-PASS: PROTÓTIPO LOCAL PARA GERENCIAMENTO E CONSULTA DE REGISTROS DE ACESSO EM REDES WI-FI DE VISITANTES
+
+João Victor Gomes da Silva
+Francisco Sales de Lima Filho
+Instituto Federal do Rio Grande do Norte (IFRN)
+
+Versão de trabalho — 13 de outubro de 2026
+
+
+RESUMO
+
+Redes Wi-Fi destinadas a visitantes precisam oferecer um processo de acesso simples e, ao mesmo tempo, permitir a consulta dos registros associados às conexões. Este trabalho apresenta o Face-Guest-Pass, um protótipo local que investiga o uso de descritores faciais para associar uma pessoa a registros de conexão. O código organiza módulos para a interface Streamlit, a detecção facial e geração de descritores com a biblioteca face_recognition, a persistência e consulta vetorial no ChromaDB e o armazenamento relacional de identificadores e conexões no SQLite. O fluxo de verificação previsto compara o descritor de uma nova captura com os descritores armazenados e utiliza o identificador encontrado para consultar os registros relacionados. A integração com a controladora de rede é representada por um módulo substituto e não corresponde, nesta versão, à comunicação com uma controladora real ou à liberação efetiva de acesso. A execução ponta a ponta dos fluxos ainda precisa ser validada. Como não há no material analisado um conjunto rotulado de múltiplas capturas por pessoa, não são apresentados resultados de acurácia, taxas de erro ou validação do limiar. O protótipo constitui uma base para investigar a integração entre reconhecimento facial e consulta de registros em redes de visitantes, mas sua eficácia operacional, segurança biométrica e adequação regulatória ainda precisam ser avaliadas.
+
+Palavras-chave: Wi-Fi para visitantes. Reconhecimento facial. Descritor facial. Busca vetorial. SQLite. ChromaDB.
+
+
+1 INTRODUÇÃO
+
+Redes sem fio para visitantes são comuns em empresas, hotéis, instituições de ensino e espaços públicos. Nesses ambientes, o acesso precisa ser suficientemente simples para pessoas que não pertencem à organização, mas também deve permitir que os responsáveis consultem informações relacionadas às conexões. A emissão manual de credenciais e a consulta de registros em sistemas diferentes podem aumentar o esforço operacional da recepção ou da equipe de suporte.
+
+No Brasil, o Marco Civil da Internet estabelece regras relacionadas à guarda de registros de conexão e de acesso a aplicações. A Lei Geral de Proteção de Dados Pessoais (LGPD), por sua vez, classifica dados biométricos vinculados a uma pessoa natural como dados pessoais sensíveis. A utilização de reconhecimento facial nesse cenário exige, portanto, cuidado na definição de finalidade, necessidade, segurança, acesso, retenção e descarte dos dados. A simples conversão de uma imagem em um vetor numérico não torna automaticamente esse vetor anônimo nem demonstra conformidade legal.
+
+Este trabalho apresenta o Face-Guest-Pass, um protótipo local desenvolvido para explorar a associação entre descritores faciais e registros de conexão em uma rede de visitantes. A aplicação oferece uma interface de captura e consulta; utiliza `face_recognition` para produzir descritores faciais; persiste esses descritores em uma coleção do ChromaDB; e mantém identificadores de pessoas e registros de conexão em SQLite. A integração com uma controladora de rede permanece simulada por um módulo substituto.
+
+O objetivo deste artigo é descrever a arquitetura efetivamente presente no protótipo, posicionar a proposta em relação a trabalhos sobre autenticação em redes sem fio e definir as limitações que precisam ser consideradas antes de avaliar o sistema em um ambiente operacional. O trabalho não afirma que a aplicação já libera acesso em uma rede real, comprova a identidade civil de um visitante, executa auditoria periódica ou garante conformidade com a legislação.
+
+As perguntas que orientam o trabalho são:
+
+P1: Como estruturar um protótipo de baixo atrito que associe uma captura facial a registros de conexão de uma rede de visitantes?
+
+P2: Como armazenar e consultar descritores faciais e registros de conexão de modo controlado, considerando que os descritores associados a pessoas continuam sendo dados biométricos sensíveis?
+
+P3: Qual limiar de distância permite distinguir, no conjunto de imagens avaliado, capturas da mesma pessoa de capturas de pessoas diferentes?
+
+O restante do artigo está organizado da seguinte forma: a Seção 2 apresenta os trabalhos relacionados; a Seção 3 descreve os materiais, o método e a arquitetura implementada; a Seção 4 delimita os resultados disponíveis e o protocolo necessário para a avaliação de distância; a Seção 5 apresenta as conclusões, limitações e trabalhos futuros.
+
+
+2 TRABALHOS RELACIONADOS
+
+Os trabalhos selecionados tratam de autenticação de redes sem fio por meio de credenciais FIDO2, provedores de identidade OAuth e mecanismos distribuídos. Eles oferecem referências para comparar objetivos e ambientes de uso, mas não são equivalentes ao protótipo deste trabalho. Em particular, os trabalhos relacionados não devem ser usados para afirmar superioridade, menor custo ou conformidade legal sem uma comparação experimental própria.
+
+2.1 EAP-FIDO
+
+Rivera-Dourado et al. (2025) apresentam o EAP-FIDO, um método de autenticação baseado em FIDO2 para redes que utilizam IEEE 802.1X. A proposta permite utilizar credenciais FIDO2 em redes WPA2/WPA3-Enterprise e em ambientes compatíveis com MACsec. Os autores implementam um protótipo e analisam aspectos de segurança e desempenho. A solução é relevante para autenticação de redes corporativas, mas pressupõe a utilização de credenciais FIDO2 e não tem como objetivo associar uma captura facial a registros de acesso de visitantes.
+
+2.2 EAP-OAUTH
+
+Mortágua, Zúquete e Salvador (2024) propõem o EAP-OAUTH, que integra OAuth 2.0 ao framework EAP utilizado em redes IEEE 802.1X. O trabalho descreve o fluxo Device Authorization Grant e apresenta uma implementação testada com provedores de identidade, incluindo Google e Auth0. O artigo discute aplicações em redes empresariais e hotspots públicos. Em relação ao Face-Guest-Pass, o EAP-OAUTH autentica por meio de provedores de identidade e não realiza comparação facial local.
+
+2.3 MOBIAUTH
+
+Dewangan e Shankar (2026) propõem o MobiAuth, uma arquitetura de autenticação descentralizada para redes móveis dinâmicas. A solução combina Hyperledger Iroha, OMNeT++ e assinaturas Ed25519 em uma arquitetura peer-to-peer. Os autores avaliam o sistema por simulação e apresentam resultados de latência, entrega de pacotes e sobrecarga de comunicação. O cenário e os objetivos diferem dos de uma rede Wi-Fi de visitantes administrada por uma recepção, mas o trabalho serve como referência para discutir as escolhas entre uma arquitetura centralizada local e uma arquitetura distribuída.
+
+2.4 PORTAL CATIVO COM CHAVES DE SEGURANÇA
+
+Rivera Dourado et al. (2023) apresentam uma adaptação de portal cativo para autenticação resistente a phishing com chaves de segurança. O trabalho descreve o uso de um serviço de autenticação associado ao OpenNDS e ao OpenWRT. A abordagem demonstra uma alternativa baseada em credenciais FIDO2 para o acesso à rede, mas não tem como finalidade realizar identificação facial ou associar descritores faciais aos registros de sessão.
+
+2.5 AUTENTICAÇÃO WI-FI COM OAUTH
+
+Rajakumar (2025) discute a utilização de OAuth para simplificar a autenticação em redes Wi-Fi. O trabalho apresenta uma abordagem baseada em portal e provedores de identidade, com foco na experiência do usuário e na redução do uso de senhas convencionais. A proposta é pertinente para o estudo de autenticação de visitantes, mas utiliza identidade digital externa e não implementa a comparação facial local apresentada neste protótipo.
+
+2.6 SÍNTESE COMPARATIVA
+
+Os trabalhos analisados abordam diferentes camadas do problema de acesso a redes. EAP-FIDO e EAP-OAUTH tratam de autenticação no contexto IEEE 802.1X; o trabalho sobre portal cativo aplica credenciais FIDO2 ao acesso por portal; Rajakumar discute OAuth em Wi-Fi; e MobiAuth examina autenticação descentralizada em redes móveis. O Face-Guest-Pass explora outro recorte: uma aplicação local que gera descritores faciais e os utiliza para consultar registros relacionais.
+
+A comparação abaixo descreve o foco principal reportado em cada publicação. “Não indicado” significa que o aspecto não foi identificado como objetivo central do trabalho consultado; não significa que a solução seja incapaz de implementá-lo.
+
+Trabalho | Contexto principal | Mecanismo de autenticação | Relação com este trabalho
+Rivera-Dourado et al. (2025) | Redes IEEE 802.1X | FIDO2/EAP | Autenticação de rede sem biometria facial local
+Mortágua, Zúquete e Salvador (2024) | Redes IEEE 802.1X e hotspots | OAuth 2.0/EAP | Integração com provedores de identidade
+Dewangan e Shankar (2026) | Redes móveis dinâmicas | Blockchain e Ed25519 | Arquitetura distribuída, diferente do protótipo local
+Rivera Dourado et al. (2023) | Portal cativo | Chaves de segurança FIDO2 | Acesso por portal, sem comparação facial
+Rajakumar (2025) | Autenticação Wi-Fi | OAuth | Acesso facilitado por identidade digital
+Face-Guest-Pass | Rede de visitantes, em protótipo | Comparação de descritores faciais | Busca local de registros associados a um identificador
+
+A comparação não permite concluir que o Face-Guest-Pass seja inédito em termos absolutos, mais barato, mais seguro ou juridicamente superior. Ela delimita uma combinação de funcionalidades que será investigada no protótipo: captura facial, geração local de descritor e consulta a registros associados. Uma afirmação de lacuna científica mais ampla exigiria uma busca bibliográfica reproduzível, critérios explícitos e análise integral dos estudos elegíveis.
+
+
+3 MATERIAIS E MÉTODOS
+
+3.1 DESENHO DO TRABALHO
+
+O trabalho é de natureza aplicada e apresenta um protótipo de software. A descrição da implementação baseia-se na inspeção dos módulos do projeto: `Menu.py`, `Facial.py`, `DB_Chroma.py`, `DB_SQL.py`, `Controladora.py` e `Complementos.py`. A avaliação funcional e a avaliação quantitativa do reconhecimento facial devem ser tratadas separadamente. A primeira verifica se os fluxos de captura, processamento e consulta são executados; a segunda mede o comportamento das distâncias entre descritores em um conjunto de dados rotulado.
+
+O material disponível para esta versão contém o código e uma imagem facial, mas não contém um conjunto experimental com múltiplas capturas rotuladas por identidade. Por esse motivo, os resultados de distância, as taxas de falsa aceitação e falsa rejeição e um limiar validado não são apresentados neste artigo.
+
+3.2 BUSCA DE TRABALHOS RELACIONADOS
+
+O documento-base relata uma busca bibliográfica realizada em junho de 2026 nas bases IEEE Xplore, ScienceDirect e Wiley Online Library. A consulta exploratória indicada no documento foi:
+
+("captive portal" OR "WLAN authentication" OR "guest Wi-Fi") AND ("voucher" OR "access control") AND ("facial identification")
+
+Como a consulta exploratória não retornou resultados considerados suficientes pelos autores, o documento relata uma busca ampliada com a seguinte expressão:
+
+("captive portal" OR "WLAN authentication" OR "guest Wi-Fi") AND ("voucher" OR "access control")
+
+Foram informados os seguintes quantitativos: IEEE Xplore, 18 resultados iniciais, 8 após o filtro temporal e 2 selecionados por resumo; ScienceDirect, 34, 13 e 4; Wiley Online Library, 41, 8 e 0. Os totais relatados são, respectivamente, 93, 29 e 6. O documento informa que um dos seis trabalhos não foi obtido em texto integral e que os cinco restantes foram analisados.
+
+Esses números são apresentados como dados do levantamento registrado pelos autores. Para que a busca seja reproduzível, a versão final do artigo deve informar a expressão exata executada em cada base, os campos consultados, a data de cada consulta, os filtros aplicados, o procedimento de remoção de duplicatas e os motivos de inclusão e exclusão. Caso esses registros não estejam disponíveis, o levantamento deve ser descrito como uma busca exploratória, e não como uma revisão sistemática.
+
+3.3 ARQUITETURA IMPLEMENTADA
+
+A versão atual do Face-Guest está organizada como uma aplicação local modular. A interface, a lógica de negócio e o acesso aos bancos de dados são implementados em módulos Python dentro do mesmo projeto. A arquitetura analisada, portanto, não corresponde a microsserviços independentes.
+
+A interface é desenvolvida com Streamlit e coordena os fluxos de captura, cadastro e consulta. A captura é realizada pelo componente `st.camera_input` (Streamlit, s.d.). A imagem recebida é salva temporariamente no diretório `Faciais/` para ser processada pelo módulo facial.
+
+O módulo `Facial.py` utiliza a biblioteca `face_recognition`, baseada no dlib, para detectar faces e gerar descritores numéricos. Esses descritores são embeddings faciais, isto é, vetores destinados à comparação por distância; não são hashes criptográficos (King, 2017; Geitgey, s.d.). Após o processamento da imagem, o fluxo chama uma função para remover o arquivo temporário.
+
+O módulo `DB_Chroma.py` inicializa um cliente persistente do ChromaDB no diretório `chroma_db` e utiliza uma coleção chamada `face_encodings`. Na inclusão, associa o embedding a um identificador de pessoa. Na consulta, solicita o vizinho mais próximo e compara a distância retornada com o limiar definido no código. Como a métrica padrão do ChromaDB é L2 ao quadrado, o limiar atual de 0,2 não deve ser interpretado como uma distância euclidiana simples nem como uma porcentagem de similaridade (Chroma, s.d.). Esse limiar ainda precisa de avaliação empírica.
+
+O módulo `DB_SQL.py` mantém os dados relacionais no arquivo `face_guest.db`. A tabela `pessoas` guarda identificadores internos. A tabela `conexoes` associa uma pessoa a IP, voucher e data de conexão. A estrutura atual não registra MAC ou modelo do dispositivo. O banco é acessado por meio do módulo `sqlite3` da biblioteca padrão do Python (Python Software Foundation, s.d.).
+
+O módulo `Controladora.py` é um substituto da integração com a controladora. Ele não representa uma comunicação comprovada com uma API real nem a liberação efetiva de acesso à rede. Por essa razão, o artigo diferencia a presença de um ponto de integração no código da implementação operacional da controladora.
+
+Fluxo de cadastro previsto no código: a interface recebe a imagem; o módulo facial deve gerar um embedding e remover a imagem temporária; o embedding é consultado no ChromaDB; se a busca não encontrar correspondência dentro do limiar configurado, a lógica cria um identificador no SQLite e associa esse identificador ao embedding no ChromaDB. O módulo da controladora é previsto no fluxo de voucher, mas a integração real não faz parte desta versão. O encadeamento ponta a ponta precisa ser validado antes de ser descrito como operação funcional.
+
+Fluxo de consulta previsto no código: a interface recebe uma nova imagem; o módulo facial deve gerar um novo embedding; o ChromaDB busca o vizinho mais próximo; se o resultado é aceito pelo limiar, o identificador retornado deve ser utilizado pelo módulo SQL para consultar os registros de conexão associados. Essa verificação é iniciada pela interface quando solicitada; o código não implementa uma auditoria automática ou periódica da sessão Wi-Fi. O funcionamento integrado desse fluxo ainda não foi validado.
+
+Em resumo, a arquitetura combina uma interface Streamlit, processamento facial local, persistência vetorial no ChromaDB, persistência relacional no SQLite e um módulo substituto para a controladora. A execução desses fluxos deve ser validada ponta a ponta antes de afirmar que a aplicação oferece um serviço operacional completo.
+
+3.4 CONSIDERAÇÕES SOBRE DADOS E REGULAÇÃO
+
+A LGPD define como dado pessoal sensível o dado biométrico vinculado a uma pessoa natural. Um embedding facial ligado a um identificador de pessoa ou a registros de conexão continua sendo dado biométrico associado a um titular. O descarte da fotografia reduz a quantidade de dados armazenados, mas não permite afirmar, sem análise adicional, que o embedding é anônimo, irreversível ou incapaz de revelar informação biométrica.
+
+O Marco Civil da Internet estabelece deveres relativos à guarda de registros de conexão, inclusive prazo e condições de sigilo e segurança, para os sujeitos descritos na lei. A aplicação desses deveres ao ambiente específico do projeto depende da função jurídica e operacional de cada entidade envolvida. Assim, este artigo não conclui que a implementação, por si só, cumpre o Marco Civil ou a LGPD.
+
+Na versão atual, o banco SQL registra identificador de pessoa, IP, voucher e data de conexão. Não registra MAC ou modelo do dispositivo. O projeto também não apresenta política técnica implementada de prazo de retenção, exclusão de embeddings, controle de acesso administrativo, criptografia em repouso, registro de auditoria ou procedimento de atendimento aos direitos dos titulares. Esses aspectos devem ser avaliados antes de qualquer implantação real.
+
+
+4 IMPLEMENTAÇÃO E PLANO DE AVALIAÇÃO
+
+4.1 IMPLEMENTAÇÃO DISPONÍVEL
+
+O código está dividido em módulos para interface, processamento facial, acesso ao ChromaDB, acesso ao SQLite, funções auxiliares e substituto da controladora. Essa separação facilita identificar responsabilidades dentro do projeto, mas não significa que os módulos sejam serviços de rede independentes.
+
+O fluxo de reconhecimento usa o primeiro descritor facial retornado pela biblioteca para cada imagem. A consulta ao ChromaDB solicita o vizinho mais próximo. Se não houver itens na coleção, a função retorna ausência de correspondência; caso haja resultado, a distância é comparada ao limite configurado no código. No estado atual do projeto, o valor de referência é 0,2 na métrica retornada pela coleção. Esse valor deve ser tratado como parâmetro de implementação, não como limiar empiricamente validado.
+
+O histórico é consultado pelo identificador interno da pessoa e apresenta os registros retornados pelo SQLite. O escopo atual não demonstra coleta de MAC, modelo do dispositivo, duração real de acesso, confirmação de conexão pela controladora ou monitoramento periódico de presença.
+
+4.2 TESTE DE DISTÂNCIA A REALIZAR
+
+A avaliação de distância requer imagens rotuladas e múltiplas capturas por pessoa. Uma única imagem não permite estimar a variação entre capturas da mesma identidade e também não permite medir comparações entre pessoas diferentes. Os dados devem ser coletados com autorização apropriada e com condições documentadas, como iluminação, distância da câmera, pose e variação entre sessões.
+
+O protocolo proposto é o seguinte:
+
+1. Definir um conjunto de participantes e registrar várias capturas faciais de cada participante em mais de uma condição controlada.
+2. Separar imagens de referência e imagens de consulta, evitando usar a mesma imagem nos dois lados de uma comparação.
+3. Calcular os embeddings com a mesma biblioteca, modelo e parâmetros usados no protótipo.
+4. Calcular as distâncias entre pares genuínos, formados por imagens da mesma pessoa, e pares impostores, formados por imagens de pessoas diferentes.
+5. Registrar a métrica exata usada. Para o ChromaDB padrão, reportar a distância L2 ao quadrado; se houver conversão para distância euclidiana, declarar explicitamente a transformação aplicada.
+6. Avaliar uma faixa de limiares e reportar falsas aceitações, falsas rejeições, taxa de falsa aceitação (FAR), taxa de falsa rejeição (FRR) e, se apropriado, curva ROC e taxa de erro igual (EER).
+7. Selecionar o limiar em dados de calibração e reportar o desempenho final em um conjunto separado, para reduzir o risco de escolher e avaliar o limiar sobre os mesmos pares.
+
+O tamanho da amostra, o número de participantes, o número de imagens, os critérios de inclusão, as condições de captura e as versões das bibliotecas devem ser informados após a coleta e execução. Nenhum resultado numérico é incluído nesta versão porque esses dados não estão disponíveis no material analisado.
+
+4.3 RESULTADOS DISPONÍVEIS E LIMITAÇÕES DA AVALIAÇÃO
+
+O material disponível permite descrever a estrutura dos módulos e o comportamento previsto para a consulta de descritores e registros. Não permite afirmar acurácia, taxa de erro, robustez a mudanças de iluminação ou pose, desempenho em diferentes grupos demográficos ou eficácia do limiar 0,2.
+
+Também não há evidência, nesta versão, de integração com uma controladora real. A emissão de voucher, a liberação da rede e o registro de parâmetros obtidos diretamente da controladora devem ser avaliados em etapa própria. A comparação de descritores não constitui, por si só, prova de vivacidade ou proteção contra ataques de apresentação com fotografia, vídeo ou máscara.
+
+Por essas razões, os resultados deste artigo devem ser entendidos como descrição do protótipo e definição do plano experimental. A validação do reconhecimento facial e da integração de rede permanece como trabalho pendente.
+
+
+5 CONCLUSÕES
+
+Este artigo descreveu o Face-Guest-Pass como um protótipo local modular para explorar a associação entre descritores faciais e registros de conexão em uma rede de visitantes. A implementação analisada organiza uma interface Streamlit, processamento facial por meio da biblioteca `face_recognition`, armazenamento vetorial no ChromaDB e armazenamento relacional no SQLite. A integração com a controladora permanece substituída por um módulo de simulação.
+
+A descrição da arquitetura delimita o que o sistema atualmente representa: uma busca de correspondência entre descritores faciais e uma consulta de registros pelo identificador encontrado. O código não comprova liberação de acesso a uma rede real, auditoria periódica da sessão, captura de MAC e modelo do dispositivo ou validação do limiar de distância. Portanto, os resultados disponíveis não permitem afirmar que a solução atingiu desempenho biométrico adequado ou conformidade jurídica integral.
+
+A principal contribuição nesta etapa é a estruturação de um protótipo e de um plano para avaliar a comparação facial em condições documentadas. A avaliação deverá medir distâncias genuínas e impostoras, selecionar e validar um limiar em dados separados e reportar métricas de erro. Em paralelo, a integração real com a controladora, os controles de segurança, a retenção e a exclusão dos dados biométricos deverão ser implementados e avaliados.
+
+5.1 LIMITAÇÕES
+
+O protótipo usa uma única captura selecionada pelo fluxo da interface e não conta, no material disponível, com um conjunto de teste rotulado. Não foi realizada avaliação quantitativa de reconhecimento, detecção de vivacidade, análise de vieses ou teste contra ataques de apresentação. A integração com a controladora é simulada, e o esquema relacional atual não inclui MAC nem modelo do dispositivo. A arquitetura também não apresenta alta disponibilidade, redundância ou política de retenção automatizada.
+
+Essas limitações restringem as conclusões à descrição do protótipo. Os resultados não devem ser generalizados para instalações empresariais, grandes volumes de usuários ou contextos de produção sem testes adicionais.
+
+5.2 TRABALHOS FUTUROS
+
+Como trabalho futuro, será conduzida a avaliação de distância descrita na Seção 4.2 com imagens rotuladas e autorização apropriada. O experimento deverá registrar as condições de captura, versões de software, métrica de distância, limiares avaliados, FAR, FRR e o procedimento de separação entre calibração e teste.
+
+Também se pretende implementar e testar a integração com uma controladora real em ambiente controlado, documentando quais dados são fornecidos pela API e como são associados a cada sessão. A estrutura de persistência deverá ser revisada para refletir somente dados efetivamente coletados e necessários. Por fim, deverão ser avaliadas medidas de segurança, controle de acesso, retenção e exclusão dos descritores, além de mecanismos de detecção de vivacidade caso o sistema venha a ser usado para decisões de acesso.
+
+
+REFERÊNCIAS
+
+DEWANGAN, Narendra K.; SHANKAR, Gauri. MobiAuth: blockchain-driven decentralized authentication for enhanced security and privacy in mobile networks. Ad Hoc Networks, v. 181, art. 104064, 2026. DOI: https://doi.org/10.1016/j.adhoc.2025.104064.
+
+GEITGEY, Adam. face_recognition: the world's simplest facial recognition API for Python and the command line. GitHub, s.d. Disponível em: <https://github.com/ageitgey/face_recognition>. Acesso em: 13 out. 2026.
+
+KING, Davis E. High Quality Face Recognition with Deep Metric Learning. dlib blog, 12 fev. 2017. Disponível em: <https://blog.dlib.net/2017/02/high-quality-face-recognition-with-deep.html>. Acesso em: 13 out. 2026.
+
+MORTÁGUA, Duarte; ZÚQUETE, André; SALVADOR, Paulo. Enhancing 802.1X authentication with identity providers using EAP-OAUTH and OAuth 2.0. Computer Networks, v. 244, art. 110337, 2024. DOI: https://doi.org/10.1016/j.comnet.2024.110337.
+
+PYTHON SOFTWARE FOUNDATION. sqlite3 — DB-API 2.0 interface for SQLite databases. Python 3.13 documentation, s.d. Disponível em: <https://docs.python.org/3.13/library/sqlite3.html>. Acesso em: 13 out. 2026.
+
+RAJAKUMAR, Sumanth Jain Pavagada. Enhancing WiFi Authentication: Leveraging OAuth for Secure and User-Friendly Wireless Networks. In: IEEE 15th Annual Computing and Communication Workshop and Conference (CCWC), 2025. p. 807–813. Disponível em: <https://ieeexplore.ieee.org/document/10903952>. Acesso em: 13 out. 2026.
+
+RIVERA-DOURADO, Martiño; GESTAL, Marcos; PAZOS, Alejandro; VÁZQUEZ-NAYA, José. Adapting a captive portal for phishing-resistant network authentication using security keys. In: JORNADAS NACIONALES DE INVESTIGACIÓN EN CIBERSEGURIDAD, 8., 2023, Vigo. Actas [...]. Vigo: Universidade de Vigo, 2023. p. 531–538. ISBN 978-84-8158-970-2.
+
+RIVERA-DOURADO, Martiño; XENAKIS, Christos; PAZOS, Alejandro; VÁZQUEZ-NAYA, Jose. EAP-FIDO: a novel EAP method for using FIDO2 credentials for network authentication. Computer Networks, v. 266, art. 111348, 2025. DOI: https://doi.org/10.1016/j.comnet.2025.111348.
+
+STREAMLIT. st.camera_input. Streamlit Documentation, s.d. Disponível em: <https://docs.streamlit.io/1.62.0/develop/api-reference/widgets/st.camera_input>. Acesso em: 13 out. 2026.
+
+CHROMA. Usage guide. Chroma Documentation, s.d. Disponível em: <https://docs.trychroma.com/>. Acesso em: 13 out. 2026.
+
+BRASIL. Lei nº 12.965, de 23 de abril de 2014. Estabelece princípios, garantias, direitos e deveres para o uso da Internet no Brasil. Disponível em: <https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2014/lei/l12965.htm>. Acesso em: 13 out. 2026.
+
+BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD). Disponível em: <https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm>. Acesso em: 13 out. 2026.
+
+
+NOTAS PARA A VERSÃO FINAL
+
+1. Confirmar com o orientador se a busca bibliográfica deve ser apresentada como exploratória ou sistemática. Não chamar de revisão sistemática sem registrar estratégia reproduzível, deduplicação e critérios completos.
+2. A seção de resultados precisa ser atualizada depois dos testes de distância; não preencher os resultados numéricos antes de executar o experimento.
+3. Informar as versões efetivamente instaladas de Python, Streamlit, face_recognition, dlib e ChromaDB.
+4. Revisar nomes dos autores, acentuação, padrão de citação e normas bibliográficas exigidas pelo curso.
+5. A tabela comparativa foi substituída por uma síntese descritiva para evitar classificações binárias sem critérios publicados e verificados.
