@@ -31,7 +31,7 @@ def comparar_encoding(encoding_comp):
         n_results=1
     )
 
-    #Verifica se algum resultado foi encontrado e se a distância é aceitável (menor que 0.6)
+    #Verifica se algum resultado foi encontrado e se a distância é aceitável (menor que 0.4)
     if not results["ids"] or not results["ids"][0]:
         return None
 
@@ -40,7 +40,7 @@ def comparar_encoding(encoding_comp):
 
     print("DB_Chroma.py - Distância:", distancia)
 
-    if distancia > 0.2:
+    if distancia > 0.4:
         return None
 
     return int(results["ids"][0][0])

@@ -15,10 +15,10 @@ html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif;
 }
 
-/* Fundo com gradiente suave */
+/* Fundo claro com gradiente suave */
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
-    color: #e2e8f0;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 55%, #dcfce7 100%);
+    color: #14532d;
 }
 
 /* Esconde elementos padrão do Streamlit */
@@ -31,44 +31,49 @@ html, body, [class*="css"], .stApp {
     max-width: 760px;
 }
 
+/* Textos em geral */
+.stApp p, .stApp label, .stApp span, .stApp li {
+    color: #14532d;
+}
+
 /* ---------- SIDEBAR ---------- */
 [data-testid="stSidebar"] {
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(148, 163, 184, 0.15);
+    border-right: 1px solid rgba(22, 163, 74, 0.2);
 }
 [data-testid="stSidebar"] [role="radiogroup"] { gap: 0.5rem; }
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    background: #f0fdf4;
+    border: 1px solid rgba(22, 163, 74, 0.2);
     border-radius: 12px;
     padding: 0.7rem 0.9rem;
     transition: all 0.2s ease;
     width: 100%;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    background: rgba(99, 102, 241, 0.18);
-    border-color: rgba(129, 140, 248, 0.6);
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(22, 163, 74, 0.6);
     transform: translateX(3px);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
-    border-color: #818cf8;
+    background: linear-gradient(135deg, rgba(34,197,94,0.3), rgba(74,222,128,0.3));
+    border-color: #16a34a;
 }
 
 /* ---------- CÂMERA ---------- */
 [data-testid="stCameraInput"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: #ffffff;
+    border: 1px solid rgba(22, 163, 74, 0.25);
     border-radius: 20px;
     padding: 1rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 10px 40px rgba(22, 101, 52, 0.12);
 }
 [data-testid="stCameraInput"] label p {
     font-weight: 600;
     font-size: 1rem;
     text-align: center;
-    color: #c7d2fe;
+    color: #166534;
 }
 [data-testid="stCameraInput"] video,
 [data-testid="stCameraInput"] img {
@@ -78,26 +83,30 @@ html, body, [class*="css"], .stApp {
 /* ---------- BOTÕES ---------- */
 .stButton > button,
 [data-testid="stCameraInput"] button {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #16a34a, #22c55e);
     color: #fff;
     border: none;
     border-radius: 12px;
     padding: 0.6rem 1.4rem;
     font-weight: 600;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
 }
 .stButton > button:hover,
 [data-testid="stCameraInput"] button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(99, 102, 241, 0.6);
+    box-shadow: 0 8px 22px rgba(22, 163, 74, 0.5);
+    color: #fff;
+}
+.stButton > button p,
+[data-testid="stCameraInput"] button p {
     color: #fff;
 }
 
 /* ---------- ALERTAS (sucesso / erro) ---------- */
 [data-testid="stAlert"] {
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(22, 163, 74, 0.2);
     backdrop-filter: blur(8px);
     animation: surgir 0.4s ease;
 }
@@ -108,24 +117,26 @@ h1 {
     text-align: center;
     font-size: 3rem !important;
     letter-spacing: 0.25rem;
-    color: #fff;
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25));
-    border: 2px dashed #818cf8;
+    color: #166534;
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(74,222,128,0.2));
+    border: 2px dashed #16a34a;
     border-radius: 20px;
     padding: 1.5rem 1rem !important;
     margin-top: 1rem;
-    text-shadow: 0 0 20px rgba(129, 140, 248, 0.8);
     animation: surgir 0.6s ease, brilho 2.5s ease-in-out infinite;
 }
 h3 {
     text-align: center;
-    color: #a5b4fc;
+    color: #15803d;
     font-weight: 500;
 }
 
 /* ---------- TELA DE HISTÓRICO ---------- */
 [data-testid="stMarkdownContainer"] p {
     line-height: 1.6;
+}
+[data-testid="stMetricValue"] {
+    color: #166534;
 }
 
 /* ---------- ANIMAÇÕES ---------- */
@@ -134,8 +145,8 @@ h3 {
     to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes brilho {
-    0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-    50%      { box-shadow: 0 0 35px rgba(139, 92, 246, 0.7); }
+    0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.25); }
+    50%      { box-shadow: 0 0 35px rgba(22, 163, 74, 0.55); }
 }
 </style>
 """, unsafe_allow_html=True)
