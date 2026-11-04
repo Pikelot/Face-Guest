@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 
 #Nomenclatura do banco
 
@@ -60,17 +61,13 @@ def inserir_pessoa():
 #Propósito> Registra a conexão do usuário com o IP e voucher gerado #Retorno> Nenhum
 
 def registrar_conexao(pessoa_id, ip, voucher, hostname, mac):
-
-    conexao = conectar()
-    cursor = conexao.cursor()
-
-    cursor.execute("""
-        INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac)
-        VALUES (?, ?, ?, ?, ?)
-    """, (pessoa_id, ip, voucher, hostname, mac))
-
-    conexao.commit()
-    conexao.close()
+    # closing garante que a conexão seja liberada até quando o INSERT falhar.
+    with closing(conectar()) as conexao:
+        with conexao:
+            conexao.execute("""
+                INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac)
+                VALUES (?, ?, ?, ?, ?)
+            """, (pessoa_id, ip, voucher, hostname, mac))
 
 #Propósito> Buscar conexões #Retorno> Lista de conexões
 

@@ -15,17 +15,14 @@ html, body, [class*="css"], .stApp {
     font-family: 'Inter', sans-serif;
 }
 
-/* Fundo com gradiente suave */
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #312e81 100%);
-    color: #e2e8f0;
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 55%, #ffedd5 100%);
+    color: #292524;
 }
 
-/* Esconde elementos padrão do Streamlit */
 #MainMenu, footer { visibility: hidden; }
 [data-testid="stHeader"] { background: transparent; }
 
-/* Container principal */
 .block-container {
     padding-top: 3rem;
     max-width: 760px;
@@ -33,42 +30,42 @@ html, body, [class*="css"], .stApp {
 
 /* ---------- SIDEBAR ---------- */
 [data-testid="stSidebar"] {
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(148, 163, 184, 0.15);
+    border-right: 1px solid rgba(234, 88, 12, 0.15);
 }
 [data-testid="stSidebar"] [role="radiogroup"] { gap: 0.5rem; }
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    background: rgba(249, 115, 22, 0.04);
+    border: 1px solid rgba(234, 88, 12, 0.18);
     border-radius: 12px;
     padding: 0.7rem 0.9rem;
     transition: all 0.2s ease;
     width: 100%;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    background: rgba(99, 102, 241, 0.18);
-    border-color: rgba(129, 140, 248, 0.6);
+    background: rgba(249, 115, 22, 0.12);
+    border-color: rgba(234, 88, 12, 0.55);
     transform: translateX(3px);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
-    border-color: #818cf8;
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.18), rgba(251, 146, 60, 0.22));
+    border-color: #f97316;
 }
 
 /* ---------- CÂMERA ---------- */
 [data-testid="stCameraInput"] {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(234, 88, 12, 0.2);
     border-radius: 20px;
     padding: 1rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 10px 40px rgba(124, 45, 18, 0.12);
 }
 [data-testid="stCameraInput"] label p {
     font-weight: 600;
     font-size: 1rem;
     text-align: center;
-    color: #c7d2fe;
+    color: #c2410c;
 }
 [data-testid="stCameraInput"] video,
 [data-testid="stCameraInput"] img {
@@ -78,26 +75,26 @@ html, body, [class*="css"], .stApp {
 /* ---------- BOTÕES ---------- */
 .stButton > button,
 [data-testid="stCameraInput"] button {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #f97316, #ea580c);
     color: #fff;
     border: none;
     border-radius: 12px;
     padding: 0.6rem 1.4rem;
     font-weight: 600;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
 }
 .stButton > button:hover,
 [data-testid="stCameraInput"] button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(99, 102, 241, 0.6);
+    box-shadow: 0 8px 22px rgba(234, 88, 12, 0.4);
     color: #fff;
 }
 
-/* ---------- ALERTAS (sucesso / erro) ---------- */
+/* ---------- ALERTAS ---------- */
 [data-testid="stAlert"] {
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(234, 88, 12, 0.15);
     backdrop-filter: blur(8px);
     animation: surgir 0.4s ease;
 }
@@ -108,22 +105,22 @@ h1 {
     text-align: center;
     font-size: 3rem !important;
     letter-spacing: 0.25rem;
-    color: #fff;
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25));
-    border: 2px dashed #818cf8;
+    color: #9a3412;
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(251, 146, 60, 0.18));
+    border: 2px dashed #f97316;
     border-radius: 20px;
     padding: 1.5rem 1rem !important;
     margin-top: 1rem;
-    text-shadow: 0 0 20px rgba(129, 140, 248, 0.8);
+    text-shadow: 0 0 20px rgba(249, 115, 22, 0.18);
     animation: surgir 0.6s ease, brilho 2.5s ease-in-out infinite;
 }
 h3 {
     text-align: center;
-    color: #a5b4fc;
+    color: #c2410c;
     font-weight: 500;
 }
 
-/* ---------- TELA DE HISTÓRICO ---------- */
+/* ---------- HISTÓRICO ---------- */
 [data-testid="stMarkdownContainer"] p {
     line-height: 1.6;
 }
@@ -134,8 +131,8 @@ h3 {
     to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes brilho {
-    0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-    50%      { box-shadow: 0 0 35px rgba(139, 92, 246, 0.7); }
+    0%, 100% { box-shadow: 0 0 15px rgba(249, 115, 22, 0.15); }
+    50%      { box-shadow: 0 0 35px rgba(234, 88, 12, 0.32); }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -146,6 +143,10 @@ sql.criar_tabela()
 # Aqui iniciamos a st.session_state tela caso não exista, e definimos a tela inicial como "inicio"
 if "tela" not in st.session_state:
     st.session_state.tela = "inicio"
+
+if "controladora" not in st.session_state:
+    st.session_state.controladora = ctrl.Conectar()
+    print(f"Menu.py - Conectado a controladora.")
 
 opcoes = {
     "Autenticar e gerar Voucher": "inicio",
@@ -230,22 +231,46 @@ if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    voucher = ctrl.Gerar_voucher(st.session_state["id"])[0]
+    if "voucher" not in st.session_state:
+        st.session_state["voucher"] = ctrl.Gerar_voucher(st.session_state.controladora, st.session_state["id"])[0]
 
     st.write("")
 
     col1, col2, col3 = st.columns([1, 20, 1])
 
     with col2:
-        st.title(voucher)
+        st.title(st.session_state["voucher"])
         st.subheader("Seu Código de Acesso Único")
 
-    comp.wait(20)
+    for i in range(3):
+        print("Menu.py - Aguardando conexão do usuário...")
+        #Aqui esperamos 30 segundos para o usuário se conectar, caso não se conecte, ele vai voltar para a tela inicial
+        st.info(f"Aguardando conexão... ({30 - i * 10} segundos restantes)")
+        comp.wait(10)
 
-    dispositivo = ctrl.IP(voucher)
-    sql.registrar_conexao(st.session_state["id"], dispositivo[0], voucher, dispositivo[1], dispositivo[2])
-    print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {voucher}, IP: {dispositivo[0]}, Hostname: {dispositivo[1]}, MAC: {dispositivo[2]}")
+        try:
+            dispositivo = ctrl.IP(st.session_state.controladora, st.session_state["voucher"])
+            if dispositivo is None:
+                print("Menu.py - Aguardando a controladora identificar o dispositivo...")
+                st.info("Aguardando a controladora identificar o dispositivo...")
+                continue
 
+            sql.registrar_conexao(st.session_state["id"], dispositivo[0], st.session_state["voucher"], dispositivo[1], dispositivo[2])
+            
+            print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {st.session_state['voucher']}, IP: {dispositivo[0]}, Hostname: {dispositivo[1]}, MAC: {dispositivo[2]}")
+            st.success("Conexão detectada e registrada com sucesso!")
+            
+            comp.wait(10)
+            
+            st.session_state.pop("voucher", None)
+            st.session_state.tela = "inicio"
+            st.rerun()
+
+        except Exception as e:
+            print(f"Menu.py - Erro ao consultar ou registrar conexão: {e}")
+            st.error("Não foi possível consultar ou registrar a conexão. Consulte o terminal para ver o erro.")
+
+    st.session_state.pop("voucher", None)
     st.session_state.tela = "inicio"
     st.rerun()
 

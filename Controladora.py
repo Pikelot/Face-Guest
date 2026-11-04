@@ -17,34 +17,38 @@ def Conectar():
     )
     return c
 
-def Gerar_voucher(USER_ID):
-    
-    c = Conectar()
+def Gerar_voucher(c, user_id):
     vouchers = c.create_voucher(
-        expire=60,       # 1 hora de validade
-        number=1,            # Gerar 1 voucher
-        quota=1,            # 1 = dispositivo único, 0 = multiuso
-        note=USER_ID
+        expire=60,
+        number=1,
+        quota=1,
+        note=user_id,
     )
+    voucher = vouchers[0]
+    return voucher["code"], voucher["create_time"]
 
-        # Retorna diretamente o código do voucher criado
-    for v in vouchers:
-        code_voucher = v.get("code")
-        time_voucher = v.get("create_time")
 
-    return code_voucher, time_voucher
+def IP(c, voucher_code):
+    print("Controladora.py - Verificando dispositivos conectados com o voucher:", voucher_code)
+    dispositivos = c._api_read("stat/guest", params={"voucher": voucher_code})
+    print("Controladora.py - Dispositivos encontrados:", dispositivos)
 
-def IP(voucher_code):
+    if not dispositivos:
+        print("Controladora.py - Nenhum dispositivo encontrado.")
+        return None
 
-    c = Conectar()
-    # Função para pegar o ip de conexão
-    dispositivo = c._api_read("stat/guest", params={"voucher": voucher_code})
+    dispositivo = dispositivos[0]
+    ip = dispositivo.get("ip")
+    hostname = dispositivo.get("hostname")
+    mac = dispositivo.get("mac")
 
-    #dados
-    ip = dispositivo[0].get("ip")
-    hostname = dispositivo[0].get("hostname")
-    mac = dispositivo[0].get("mac")
+    if not all((ip, hostname, mac)):
+        print("Controladora.py - Dispositivo encontrado, mas informações incompletas. Aguardando preenchimento...")
+        return None
 
     return ip, hostname, mac
+
+
+
 
 # Por enquanto não tá funcionando, mas futuramente vai ser implementado, houve um problema, não sei se foi ocasionado por esta conexão.
