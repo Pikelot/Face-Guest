@@ -31,22 +31,47 @@ def Gerar_voucher(c, user_id):
 def IP(c, voucher_code):
     print("Controladora.py - Verificando dispositivos conectados com o voucher:", voucher_code)
     dispositivos = c._api_read("stat/guest", params={"voucher": voucher_code})
-    print("Controladora.py - Dispositivos encontrados:", dispositivos)
 
     if not dispositivos:
         print("Controladora.py - Nenhum dispositivo encontrado.")
         return None
 
-    dispositivo = dispositivos[0]
+    # stat/guest pode devolver o histórico inteiro; selecione o voucher atual.
+    dispositivo = next(
+        (
+            item for item in dispositivos
+            if item.get("voucher_code") == voucher_code
+            and not item.get("expired", False)
+        ),
+        None,
+    )
+    if dispositivo is None:
+        print("Controladora.py - Nenhum dispositivo ativo encontrado para este voucher.")
+        return None
+
     ip = dispositivo.get("ip")
     hostname = dispositivo.get("hostname")
     mac = dispositivo.get("mac")
 
-    if not all((ip, hostname, mac)):
-        print("Controladora.py - Dispositivo encontrado, mas informações incompletas. Aguardando preenchimento...")
+    # stat/guest pode registrar o voucher antes de preencher o IP.
+    if mac and not ip:
+        clientes_ativos = c._api_read("stat/sta")
+        cliente = next(
+            (
+                item for item in clientes_ativos
+                if (item.get("mac") or "").lower() == mac.lower()
+            ),
+            None,
+        )
+        if cliente:
+            ip = cliente.get("ip")
+            hostname = cliente.get("hostname") or hostname
+
+    if not ip or not mac:
+        print("Controladora.py - Voucher ativo encontrado, mas o IP ainda não está disponível.")
         return None
 
-    return ip, hostname, mac
+    return ip, hostname or mac, mac
 
 
 

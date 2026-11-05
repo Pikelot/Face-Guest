@@ -1,5 +1,7 @@
 import sqlite3
 from contextlib import closing
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 #Nomenclatura do banco
 
@@ -30,7 +32,7 @@ def criar_tabela():
             mac TEXT NOT NULL,
             hostname TEXT NOT NULL,
             voucher TEXT NOT NULL,
-            data_conexao DATETIME DEFAULT CURRENT_TIMESTAMP,
+            data_conexao TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
 
             FOREIGN KEY (pessoa_id)
                 REFERENCES pessoas(id)
@@ -61,13 +63,17 @@ def inserir_pessoa():
 #Propósito> Registra a conexão do usuário com o IP e voucher gerado #Retorno> Nenhum
 
 def registrar_conexao(pessoa_id, ip, voucher, hostname, mac):
+    data_conexao = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+
     # closing garante que a conexão seja liberada até quando o INSERT falhar.
     with closing(conectar()) as conexao:
         with conexao:
             conexao.execute("""
-                INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac)
-                VALUES (?, ?, ?, ?, ?)
-            """, (pessoa_id, ip, voucher, hostname, mac))
+                INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac, data_conexao)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (pessoa_id, ip, voucher, hostname, mac, data_conexao))
 
 #Propósito> Buscar conexões #Retorno> Lista de conexões
 

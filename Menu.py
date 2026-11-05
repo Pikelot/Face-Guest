@@ -242,33 +242,48 @@ if st.session_state.tela == "gerar_voucher":
         st.title(st.session_state["voucher"])
         st.subheader("Seu Código de Acesso Único")
 
-    for i in range(3):
-        print("Menu.py - Aguardando conexão do usuário...")
-        #Aqui esperamos 30 segundos para o usuário se conectar, caso não se conecte, ele vai voltar para a tela inicial
-        st.info(f"Aguardando conexão... ({30 - i * 10} segundos restantes)")
-        comp.wait(10)
+    registrada = False
+    for tentativa in range(12):
+        print(f"Menu.py - Tentativa {tentativa + 1}/12 para localizar o dispositivo...")
+        st.info(f"Procurando o dispositivo... tentativa {tentativa + 1} de 12")
 
         try:
-            dispositivo = ctrl.IP(st.session_state.controladora, st.session_state["voucher"])
-            if dispositivo is None:
-                print("Menu.py - Aguardando a controladora identificar o dispositivo...")
-                st.info("Aguardando a controladora identificar o dispositivo...")
-                continue
+            dispositivo = ctrl.IP(
+                st.session_state.controladora,
+                st.session_state["voucher"],
+            )
 
-            sql.registrar_conexao(st.session_state["id"], dispositivo[0], st.session_state["voucher"], dispositivo[1], dispositivo[2])
-            
-            print(f"Menu.py - Conexão registrada no banco de dados com ID: {st.session_state['id']}, Voucher: {st.session_state['voucher']}, IP: {dispositivo[0]}, Hostname: {dispositivo[1]}, MAC: {dispositivo[2]}")
-            st.success("Conexão detectada e registrada com sucesso!")
-            
-            comp.wait(10)
-            
-            st.session_state.pop("voucher", None)
-            st.session_state.tela = "inicio"
-            st.rerun()
+            if dispositivo:
+                ip, hostname, mac = dispositivo
+                sql.registrar_conexao(
+                    st.session_state["id"],
+                    ip,
+                    st.session_state["voucher"],
+                    hostname,
+                    mac,
+                )
+                print(
+                    f"Menu.py - Conexão registrada: ID={st.session_state['id']}, "
+                    f"Voucher={st.session_state['voucher']}, IP={ip}, "
+                    f"Hostname={hostname}, MAC={mac}"
+                )
+                st.success(f"Conexão detectada e registrada! IP: {ip}")
+                registrada = True
+                break
 
+            print("Menu.py - IP ainda não disponível; aguardando 5 segundos...")
         except Exception as e:
             print(f"Menu.py - Erro ao consultar ou registrar conexão: {e}")
-            st.error("Não foi possível consultar ou registrar a conexão. Consulte o terminal para ver o erro.")
+            st.error("Falha ao consultar ou registrar. Consulte o terminal para ver o erro.")
+
+        if tentativa < 11:
+            comp.wait(5)
+
+    if not registrada:
+        st.warning(
+            "O voucher foi emitido, mas a controladora não informou o IP "
+            "dentro de 60 segundos. Tente verificar o histórico novamente em instantes."
+        )
 
     st.session_state.pop("voucher", None)
     st.session_state.tela = "inicio"
