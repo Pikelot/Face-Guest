@@ -1,4 +1,5 @@
 import streamlit as st
+from pathlib import Path
 import Complementos as comp
 import Controladora as ctrl
 import Facial as face
@@ -6,137 +7,9 @@ import DB_SQL as sql
 
 st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="centered")
 
-# ---------- ESTILO VISUAL (somente aparência) ----------
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap');
-
-html, body, [class*="css"], .stApp {
-    font-family: 'Inter', sans-serif;
-}
-
-.stApp {
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 55%, #ffedd5 100%);
-    color: #292524;
-}
-
-#MainMenu, footer { visibility: hidden; }
-[data-testid="stHeader"] { background: transparent; }
-
-.block-container {
-    padding-top: 3rem;
-    max-width: 760px;
-}
-
-/* ---------- SIDEBAR ---------- */
-[data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(234, 88, 12, 0.15);
-}
-[data-testid="stSidebar"] [role="radiogroup"] { gap: 0.5rem; }
-[data-testid="stSidebar"] [role="radiogroup"] label {
-    background: rgba(249, 115, 22, 0.04);
-    border: 1px solid rgba(234, 88, 12, 0.18);
-    border-radius: 12px;
-    padding: 0.7rem 0.9rem;
-    transition: all 0.2s ease;
-    width: 100%;
-}
-[data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    background: rgba(249, 115, 22, 0.12);
-    border-color: rgba(234, 88, 12, 0.55);
-    transform: translateX(3px);
-}
-[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.18), rgba(251, 146, 60, 0.22));
-    border-color: #f97316;
-}
-
-/* ---------- CÂMERA ---------- */
-[data-testid="stCameraInput"] {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(234, 88, 12, 0.2);
-    border-radius: 20px;
-    padding: 1rem;
-    box-shadow: 0 10px 40px rgba(124, 45, 18, 0.12);
-}
-[data-testid="stCameraInput"] label p {
-    font-weight: 600;
-    font-size: 1rem;
-    text-align: center;
-    color: #c2410c;
-}
-[data-testid="stCameraInput"] video,
-[data-testid="stCameraInput"] img {
-    border-radius: 14px;
-}
-
-/* ---------- BOTÕES ---------- */
-.stButton > button,
-[data-testid="stCameraInput"] button {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1.4rem;
-    font-weight: 600;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
-}
-.stButton > button:hover,
-[data-testid="stCameraInput"] button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(234, 88, 12, 0.4);
-    color: #fff;
-}
-
-/* ---------- ALERTAS ---------- */
-[data-testid="stAlert"] {
-    border-radius: 14px;
-    border: 1px solid rgba(234, 88, 12, 0.15);
-    backdrop-filter: blur(8px);
-    animation: surgir 0.4s ease;
-}
-
-/* ---------- TELA DO VOUCHER ---------- */
-h1 {
-    font-family: 'JetBrains Mono', monospace !important;
-    text-align: center;
-    font-size: 3rem !important;
-    letter-spacing: 0.25rem;
-    color: #9a3412;
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(251, 146, 60, 0.18));
-    border: 2px dashed #f97316;
-    border-radius: 20px;
-    padding: 1.5rem 1rem !important;
-    margin-top: 1rem;
-    text-shadow: 0 0 20px rgba(249, 115, 22, 0.18);
-    animation: surgir 0.6s ease, brilho 2.5s ease-in-out infinite;
-}
-h3 {
-    text-align: center;
-    color: #c2410c;
-    font-weight: 500;
-}
-
-/* ---------- HISTÓRICO ---------- */
-[data-testid="stMarkdownContainer"] p {
-    line-height: 1.6;
-}
-
-/* ---------- ANIMAÇÕES ---------- */
-@keyframes surgir {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes brilho {
-    0%, 100% { box-shadow: 0 0 15px rgba(249, 115, 22, 0.15); }
-    50%      { box-shadow: 0 0 35px rgba(234, 88, 12, 0.32); }
-}
-</style>
-""", unsafe_allow_html=True)
-# ---------- FIM DO ESTILO ----------
+# ---------- ESTILO VISUAL (definido em estilo.css) ----------
+css = Path(__file__).with_name("estilo.css").read_text(encoding="utf-8")
+st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 sql.criar_tabela()
 

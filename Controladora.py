@@ -27,7 +27,6 @@ def Gerar_voucher(c, user_id):
     voucher = vouchers[0]
     return voucher["code"], voucher["create_time"]
 
-
 def IP(c, voucher_code):
     print("Controladora.py - Verificando dispositivos conectados com o voucher:", voucher_code)
     dispositivos = c._api_read("stat/guest", params={"voucher": voucher_code})
@@ -72,8 +71,3 @@ def IP(c, voucher_code):
         return None
 
     return ip, hostname or mac, mac
-
-
-
-
-# Por enquanto não tá funcionando, mas futuramente vai ser implementado, houve um problema, não sei se foi ocasionado por esta conexão.
