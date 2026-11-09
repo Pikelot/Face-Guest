@@ -33,11 +33,18 @@ def criar_tabela():
             hostname TEXT NOT NULL,
             voucher TEXT NOT NULL,
             data_conexao TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+            cpf TEXT NOT NULL,
 
             FOREIGN KEY (pessoa_id)
                 REFERENCES pessoas(id)
         )
     """)
+
+    # Atualiza bancos já existentes, criados antes da coluna CPF.
+    cursor.execute("PRAGMA table_info(conexoes)")
+    colunas_conexoes = {coluna[1] for coluna in cursor.fetchall()}
+    if "cpf" not in colunas_conexoes:
+        cursor.execute("ALTER TABLE conexoes ADD COLUMN cpf TEXT NOT NULL DEFAULT ''")
 
     conexao.commit()
     conexao.close()
@@ -62,7 +69,7 @@ def inserir_pessoa():
 
 #Propósito> Registra a conexão do usuário com o IP e voucher gerado #Retorno> Nenhum
 
-def registrar_conexao(pessoa_id, ip, voucher, hostname, mac):
+def registrar_conexao(pessoa_id, ip, voucher, hostname, mac, cpf):
     data_conexao = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime(
         "%Y-%m-%d %H:%M:%S"
     )
@@ -71,9 +78,9 @@ def registrar_conexao(pessoa_id, ip, voucher, hostname, mac):
     with closing(conectar()) as conexao:
         with conexao:
             conexao.execute("""
-                INSERT INTO conexoes (pessoa_id, ip, voucher, hostname, mac, data_conexao)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (pessoa_id, ip, voucher, hostname, mac, data_conexao))
+                INSERT INTO conexoes (pessoa_id, cpf, ip, voucher, hostname, mac, data_conexao)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (pessoa_id, cpf, ip, voucher, hostname, mac, data_conexao))
 
 #Propósito> Buscar conexões #Retorno> Lista de conexões
 

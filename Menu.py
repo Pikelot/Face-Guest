@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 from pathlib import Path
 import Complementos as comp
 import Controladora as ctrl
@@ -10,6 +11,15 @@ st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="center
 # ---------- ESTILO VISUAL (definido em estilo.css) ----------
 css = Path(__file__).with_name("estilo.css").read_text(encoding="utf-8")
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+# Imagem opcional, exibida em todas as telas quando o arquivo estiver presente.
+caminho_imagem_canto = Path(__file__).parent / "assets" / "rodape.png"
+if caminho_imagem_canto.exists():
+    imagem_base64 = base64.b64encode(caminho_imagem_canto.read_bytes()).decode("ascii")
+    st.markdown(
+        f'<img class="imagem-canto" src="data:image/png;base64,{imagem_base64}" alt="">',
+        unsafe_allow_html=True,
+    )
 
 sql.criar_tabela()
 
@@ -36,8 +46,153 @@ if "camera_key" not in st.session_state:
 
 # PROCESSO DE AUTENTICAÇÃO
 
-#Session 1 - Captura a face e envia para a geração de enconding
+#Session 0 - Tela de inicio
 if st.session_state.tela == "inicio":
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    st.markdown(
+        """
+        <section class="welcome-card">
+            <div class="welcome-eyebrow">FACE GUEST · ACESSO DE VISITANTES</div>
+            <div class="welcome-title">Bem-vindo!</div>
+            <p class="welcome-description">
+                Faça sua autenticação facial para receber um voucher individual
+                de acesso à rede Wi-Fi para visitantes.
+            </p>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div class='section-label'>Como funciona</div>", unsafe_allow_html=True)
+    etapa1, etapa2, etapa3 = st.columns(3)
+    etapas = [
+        (etapa1, "01", "Consentimento", "Leia o termo e confirme que concorda."),
+        (etapa2, "02", "Identificação", "Informe seu CPF para continuar."),
+        (etapa3, "03", "Autenticação", "Capture seu rosto e receba o voucher."),
+    ]
+    for coluna, numero, titulo, descricao in etapas:
+        with coluna:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <span class="step-number">{numero}</span>
+                    <div class="step-title">{titulo}</div>
+                    <div class="step-description">{descricao}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.write("")
+    _, botao_coluna, _ = st.columns([1, 2, 1])
+    with botao_coluna:
+        if st.button("Iniciar autenticação", use_container_width=True, type="primary"):
+            st.session_state.tela = "termo_de_consentimento"
+            st.rerun()
+
+#Session 0.25 - Termo de Consentimento
+if st.session_state.tela == "termo_de_consentimento":
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    #Aqui exibimos o termo de consentimento para o usuário, e ele precisa aceitar para continuar
+    st.markdown(
+        """
+        <section class="consent-card">
+            <div class="welcome-eyebrow">ANTES DE CONTINUAR</div>
+            <div class="consent-title">Termo de consentimento</div>
+            <p class="consent-copy">
+                Ao utilizar este sistema, você concorda com a coleta e uso de suas
+                informações faciais para fins de autenticação e registro de conexões.
+                Seus dados serão armazenados de forma segura e não serão compartilhados
+                com terceiros sem o seu consentimento.
+            </p>
+            <div class="consent-purpose">
+                <strong>Finalidade</strong>
+                <span>Autenticação facial e registro de conexões.</span>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    #Checkbox para o usuário aceitar o termo de consentimento
+    aceitou_termo = st.checkbox(
+        "Li e concordo com o termo de consentimento.",
+        key="aceitou_termo_consentimento",
+    )
+
+    #Divisão de botões para voltar ou aceitar e continuar, dependendo do estado do checkbox, utiliza o st.columns para criar duas colunas, uma para cada botão.
+    voltar_coluna, aceitar_coluna = st.columns(2)
+    with voltar_coluna:
+        if st.button("Voltar", use_container_width=True):
+            st.session_state.tela = "inicio"
+            st.rerun()
+    with aceitar_coluna:
+        if st.button(
+            "Aceitar e continuar",
+            use_container_width=True,
+            type="primary",
+            disabled=not aceitou_termo,
+        ):
+            st.session_state.tela = "registrar_cpf"
+            st.rerun()
+
+#Session 0.5 - Registro do CPF do usuário
+if st.session_state.tela == "registrar_cpf":
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    st.markdown(
+        """
+        <section class="cpf-card">
+            <div class="welcome-eyebrow">ETAPA 2 DE 3 · IDENTIFICAÇÃO</div>
+            <div class="cpf-progress"><span></span></div>
+            <div class="cpf-title">Informe seu CPF</div>
+            <p class="cpf-description">
+                Usaremos essa informação para identificar seu registro e associá-lo
+                à conexão de visitante.
+            </p>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    _, formulario_coluna, _ = st.columns([1, 2, 1])
+    with formulario_coluna:
+        cpf = st.text_input(
+            "CPF",
+            placeholder="Somente os 11 números",
+            max_chars=11,
+            key="cpf_input",
+            help="Digite o CPF sem pontos ou traço.",
+        )
+        st.caption("Não inclua pontos, espaços ou traço.")
+
+    voltar_coluna, continuar_coluna = st.columns(2)
+    with voltar_coluna:
+        if st.button("Voltar", use_container_width=True):
+            st.session_state.tela = "termo_de_consentimento"
+            st.rerun()
+
+    with continuar_coluna:
+        continuar = st.button(
+            "Continuar",
+            use_container_width=True,
+            type="primary",
+        )
+
+    if continuar:
+        if len(cpf) == 11 and cpf.isdigit():
+            st.session_state["cpf"] = cpf
+            st.success("CPF registrado com sucesso!")
+            comp.wait(2)
+            st.session_state.tela = "capturar_face"
+            st.rerun()
+        else:
+            st.error("CPF inválido. Certifique-se de digitar 11 números.")
+
+#Session 1 - Captura a face e envia para a geração de enconding
+if st.session_state.tela == "capturar_face":
 
     #Prints de tela atual vão existir por todo o código, para facilitar a visualização de qual tela está ativa no momento
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -93,13 +248,12 @@ if st.session_state.tela == "gerar_encoding":
     else:
         st.error("Nenhum rosto detectado na imagem. Por favor, tente novamente.")
         st.session_state.camera_key += 1
-        st.session_state.tela = "inicio"
+        st.session_state.tela = "capturar_face"
 
         comp.wait(2)
         st.rerun()
 
 #Session 3 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
-
 if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -134,6 +288,7 @@ if st.session_state.tela == "gerar_voucher":
                     st.session_state["voucher"],
                     hostname,
                     mac,
+                    st.session_state["cpf"],
                 )
                 print(
                     f"Menu.py - Conexão registrada: ID={st.session_state['id']}, "
@@ -159,7 +314,7 @@ if st.session_state.tela == "gerar_voucher":
         )
 
     st.session_state.pop("voucher", None)
-    st.session_state.tela = "inicio"
+    st.session_state.tela = "capturar_face"
     st.rerun()
 
 # PROCESSO DE VERIFICAÇÃO
