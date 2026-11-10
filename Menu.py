@@ -1,5 +1,6 @@
 import streamlit as st
 import base64
+from html import escape
 from pathlib import Path
 import Complementos as comp
 import Controladora as ctrl
@@ -207,7 +208,7 @@ if st.session_state.tela == "capturar_face":
             """
             <div class="camera-intro">
                 <div class="camera-eyebrow">ETAPA 3 DE 3 · AUTENTICAÇÃO</div>
-                <div class="camera-title">Posicione seu rosto</div>
+                <div class="camera-title">Posicione seu rosto e tire a foto</div>
                 <div class="camera-description">
                     Fique de frente para a câmera, em um local iluminado.
                     Quando estiver pronto, capture a imagem.
@@ -258,7 +259,7 @@ if st.session_state.tela == "gerar_encoding":
     if resultado[0]:
         st.success("Encoding gerado com sucesso!")
         st.session_state.camera_key += 1
-        st.session_state.tela = "gerar_voucher"
+        st.session_state.tela = "informar_voucher"
 
         comp.wait(2)
         st.rerun()
@@ -271,7 +272,37 @@ if st.session_state.tela == "gerar_encoding":
         comp.wait(2)
         st.rerun()
 
-#Session 5 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
+#Session 5 - Orienta o visitante a conectar o celular antes de gerar o voucher.
+
+if st.session_state.tela == "informar_voucher":
+
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    st.markdown(
+        """
+        <div class="voucher-info">
+            <div class="voucher-eyebrow">PRÓXIMA ETAPA</div>
+            <div class="voucher-info-title">Conecte-se ao Wi-Fi de visitantes</div>
+            <div class="voucher-instruction">
+                <span class="voucher-instruction-number">1</span>
+                <p><strong>No seu celular, selecione a rede Wi-Fi abaixo.</strong></p>
+            </div>
+            <div class="voucher-network">📶 desenvolvern.visitantes</div>
+            <div class="voucher-instruction">
+                <span class="voucher-instruction-number">2</span>
+                <p><strong>Quando o portal aparecer, volte para esta tela e toque em “Continuar para gerar meu voucher”.</strong></p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="voucher-button-spacer"></div>', unsafe_allow_html=True)
+    if st.button("Continuar para gerar meu voucher", use_container_width=True, type="primary"):
+        st.session_state.tela = "gerar_voucher"
+        st.rerun()
+
+#Session 6 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
 if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -279,23 +310,29 @@ if st.session_state.tela == "gerar_voucher":
     if "voucher" not in st.session_state:
         st.session_state["voucher"] = ctrl.Gerar_voucher(st.session_state.controladora, st.session_state["id"])[0]
 
-    st.write("")
-
-    col1, col2, col3 = st.columns([1, 20, 1])
-
-    with col2:
-        st.title(st.session_state["voucher"])
-        st.subheader("Conecte-se à rede Wi-Fi usando o voucher acima.")
+    voucher_html = escape(str(st.session_state["voucher"]))
+    st.markdown(
+        f"""
+        <section class="voucher-card">
+            <div class="voucher-eyebrow">SEU CÓDIGO DE ACESSO</div>
+            <div class="voucher-info-title">Informe este voucher no portal Wi-Fi</div>
+            <div class="voucher-code">{voucher_html}</div>
+            <div class="voucher-validity">Uso único · acesso configurado para até 60 minutos</div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
     registrada = False
     contagem = 60
     timer = st.empty()
     feedback = st.empty()
+    feedback.info("Depois de confirmar o código no celular, aguarde aqui a confirmação da conexão.")
 
     while contagem >= 0:
         timer.markdown(
-            f'<div class="voucher-timer"><span>Tempo para se conectar</span>'
-            f'<strong>{contagem:02d}</strong><span>segundos restantes</span></div>',
+            f'<div class="voucher-timer"><span>Verificando sua conexão</span>'
+            f'<strong>{contagem:02d}</strong><span>s</span></div>',
             unsafe_allow_html=True,
         )
 
@@ -338,8 +375,8 @@ if st.session_state.tela == "gerar_voucher":
 
     if not registrada:
         st.warning(
-            "O voucher foi emitido, mas a controladora não informou o IP "
-            "dentro de 60 segundos. Tente verificar o histórico novamente em instantes."
+            "Não conseguimos confirmar a conexão em até 60 segundos. "
+            "Confira se o código foi aceito no portal Wi-Fi e se o celular está conectado à rede de visitantes."
         )
 
     st.session_state.pop("voucher", None)

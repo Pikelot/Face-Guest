@@ -115,23 +115,136 @@ html, body, [class*="css"], .stApp {
     line-height: 1.5;
 }
 
+/* ---------- INFORMAÇÃO E EXIBIÇÃO DO VOUCHER ---------- */
+.voucher-info,
+.voucher-card {
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    margin: 0.5rem 0 1.5rem;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 237, 0.92));
+    border: 1px solid var(--cor-borda);
+    border-radius: 24px;
+    box-shadow: 0 16px 40px rgba(124, 45, 18, 0.08);
+}
+.voucher-info {
+    text-align: center;
+}
+.voucher-eyebrow {
+    margin-bottom: 0.65rem;
+    color: var(--cor-destaque-escura);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+.voucher-info-title {
+    color: var(--cor-texto);
+    font-size: clamp(1.65rem, 5vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+.voucher-description {
+    max-width: 62ch;
+    margin: 0.9rem 0 0;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+.voucher-network {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 1.2rem;
+    padding: 0.7rem 1rem;
+    color: var(--cor-destaque-profunda);
+    background: rgba(249, 115, 22, 0.09);
+    border: 1px solid var(--cor-borda);
+    border-radius: 12px;
+    font-weight: 700;
+}
+.voucher-instruction {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    color: rgb(0, 0, 0);
+    text-align: left;
+}
+.voucher-instruction p {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.55;
+}
+.voucher-instruction strong {
+    color: var(--cor-destaque-profunda);
+    font-weight: 700;
+}
+.voucher-instruction-number {
+    display: inline-flex;
+    flex: 0 0 2.2rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: var(--cor-destaque);
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 800;
+}
+.voucher-button-spacer {
+    height: 0.75rem;
+}
+.voucher-code {
+    margin: 1.25rem 0 0.5rem;
+    padding: 1rem 0.75rem;
+    color: var(--cor-destaque-profunda);
+    background: rgba(249, 115, 22, 0.08);
+    border: 2px dashed var(--cor-destaque);
+    border-radius: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2rem, 8vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.voucher-validity {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.45rem 0.75rem;
+    color: #57534e;
+    background: rgba(41, 37, 36, 0.05);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
 /* ---------- CONSENTIMENTO ---------- */
 .consent-card {
     margin-bottom: 1rem;
+    text-align: center;
 }
 .consent-title {
     font-size: clamp(1.8rem, 5vw, 2.4rem);
 }
+.consent-card .consent-copy {
+    width: 100%;
+    margin: 1rem auto 0;
+    text-align: center !important;
+}
 .consent-purpose {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.25rem;
     margin-top: 1.25rem;
     padding: 1rem 1.1rem;
     background: rgba(249, 115, 22, 0.08);
-    border-left: 4px solid var(--cor-destaque);
-    border-radius: 0 12px 12px 0;
+    border-top: 4px solid var(--cor-destaque);
+    border-radius: 12px;
     color: var(--cor-texto);
+    text-align: center;
 }
 .consent-purpose strong {
     color: var(--cor-destaque-escura);
@@ -433,5 +546,20 @@ h3 {
     }
     [data-testid="stCameraInput"]::after {
         width: min(62%, 190px);
+    }
+    .voucher-instruction {
+        align-items: flex-start;
+        padding: 0.9rem;
+    }
+    .voucher-instruction p {
+        font-size: 0.98rem;
+    }
+    .voucher-code {
+        padding: 0.85rem 0.5rem;
+        letter-spacing: 0.06em;
+    }
+    .voucher-info,
+    .voucher-card {
+        border-radius: 20px;
     }
 }

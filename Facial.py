@@ -15,6 +15,8 @@ def gerar_encoding(caminho):
     #Encodings faciais encontrados na imagem
     encodings = face_recognition.face_encodings(imagem)
 
+    print(f"Facial.py - Encoding gerado: {encodings}")
+
     #Removendo a imagem após gerar o encoding
     comp.remover(caminho)
 
