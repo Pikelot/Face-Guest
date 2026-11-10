@@ -42,7 +42,7 @@ import numpy as np
 import face_recognition
 
 EXTENSOES = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-LIMIARES_PADRAO = [0.1, 0.2, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+LIMIARES_PADRAO = [0.3, 0.35, 0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.5, 0.55, 0.6]
 SUFIXO_NUM = re.compile(r"^(?P<nome>.+?)_(?P<num>\d+)$")
 LIMIAR_FOTO_REPETIDA = 0.05   # distância abaixo disso entre fotos "diferentes" é suspeita
 
