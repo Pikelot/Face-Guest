@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap');
 
-/* Cores do app. */
+/*
+   PALETA PRINCIPAL
+   Para mudar as cores do app, comece por estes valores.
+   Os nomes abaixo são reutilizados em vários componentes.
+*/
 :root {
     --cor-destaque: #f97316;
     --cor-destaque-escura: #ea580c;
@@ -173,6 +177,24 @@ html, body, [class*="css"], .stApp {
     font-size: 1rem;
     line-height: 1.65;
 }
+.voucher-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin: 1.25rem auto;
+    padding: 0.9rem 1.2rem;
+    color: var(--cor-texto);
+    background: rgba(249, 115, 22, 0.08);
+    border: 1px solid var(--cor-borda);
+    border-radius: 16px;
+}
+.voucher-timer strong {
+    color: var(--cor-destaque-escura);
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
 [data-testid="stTextInput"] input {
     min-height: 3.2rem;
     border-radius: 12px;
@@ -223,22 +245,111 @@ html, body, [class*="css"], .stApp {
 }
 
 /* ---------- CÂMERA ---------- */
+/* Cartão de instruções que aparece acima do controle da câmera. */
+.camera-intro {
+    margin: 0 0 1rem;
+    /* Espaço interno do cartão: aumente para deixá-lo mais alto/largo. */
+    padding: 1.15rem 1.25rem;
+    /* Fundo levemente alaranjado; a barra lateral usa a cor de destaque. */
+    background: rgba(249, 115, 22, 0.06);
+    border: 1px solid var(--cor-borda);
+    border-left: 4px solid var(--cor-destaque);
+    border-radius: 16px;
+}
+/* Linha pequena que identifica a etapa, acima do título. */
+.camera-eyebrow {
+    margin-bottom: 0.4rem;
+    color: var(--cor-destaque-escura);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+/* Título principal da tela da câmera. */
+.camera-title {
+    color: var(--cor-texto);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+/* Instrução curta abaixo do título. */
+.camera-description {
+    margin-top: 0.4rem;
+    color: #57534e;
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+/*
+   Cartão criado pelo próprio Streamlit para st.camera_input.
+   O seletor data-testid é do Streamlit; mantenha-o para continuar
+   aplicando os estilos ao controle da câmera.
+*/
 [data-testid="stCameraInput"] {
-    background: rgba(248, 249, 250, 0.85);
-    border: 1px solid rgba(234, 88, 12, 0.2);
-    border-radius: 50px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--cor-borda);
+    border-radius: 20px;
     padding: 1rem;
-    box-shadow: 0 10px 40px rgba(124, 45, 18, 0.12);
+    box-shadow: 0 16px 40px rgba(124, 45, 18, 0.10);
 }
+
+/* Moldura quadrada de orientação sobre o preview, sem capturar/clipping da foto. */
+[data-testid="stCameraInput"]::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    width: min(62%, 230px);
+    aspect-ratio: 1 / 1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background:
+        linear-gradient(#fff, #fff) left top / 34px 3px no-repeat,
+        linear-gradient(#fff, #fff) left top / 3px 34px no-repeat,
+        linear-gradient(#fff, #fff) right top / 34px 3px no-repeat,
+        linear-gradient(#fff, #fff) right top / 3px 34px no-repeat,
+        linear-gradient(#fff, #fff) left bottom / 34px 3px no-repeat,
+        linear-gradient(#fff, #fff) left bottom / 3px 34px no-repeat,
+        linear-gradient(#fff, #fff) right bottom / 34px 3px no-repeat,
+        linear-gradient(#fff, #fff) right bottom / 3px 34px no-repeat;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.75));
+}
+
+/* Texto que o Streamlit mostra junto ao controle da câmera. */
 [data-testid="stCameraInput"] label p {
+    color: var(--cor-texto);
+    font-size: 0.95rem;
     font-weight: 600;
-    font-size: 1rem;
     text-align: center;
-    color: var(--cor-destaque-texto);
 }
+
+/* Vídeo e foto continuam retangulares. A moldura quadrada acima serve só para
+   ajudar a centralizar o rosto; ela não modifica a imagem salva. */
 [data-testid="stCameraInput"] video,
 [data-testid="stCameraInput"] img {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    max-height: 440px;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background: #f5f5f4;
+    border: 1px solid rgba(41, 37, 36, 0.08);
     border-radius: 14px;
+    margin: 0 auto;
+}
+
+/* Ajusta o arredondamento do botão interno da câmera. A cor é definida
+   no bloco geral de botões mais abaixo. */
+[data-testid="stCameraInput"] button {
+    border-radius: 12px;
+    /* O texto do botão interno não é configurável pelo st.camera_input.
+       Escondemos só o texto visual original e mostramos a tradução abaixo. */
+    font-size: 0;
+}
+[data-testid="stCameraInput"] button::after {
+    content: "Tirar foto";
+    font-size: 1rem;
 }
 
 /* ---------- BOTÕES ---------- */
@@ -302,4 +413,25 @@ h3 {
 @keyframes brilho {
     0%, 100% { box-shadow: 0 0 15px rgba(249, 115, 22, 0.15); }
     50%      { box-shadow: 0 0 35px rgba(234, 88, 12, 0.32); }
+}
+
+@media (max-width: 640px) {
+    /* Ajustes da câmera em telas estreitas, como celulares. */
+    .camera-intro {
+        padding: 1rem;
+    }
+    .camera-title {
+        font-size: 1.2rem;
+    }
+    [data-testid="stCameraInput"] {
+        padding: 0.75rem;
+        border-radius: 16px;
+    }
+    [data-testid="stCameraInput"] video,
+    [data-testid="stCameraInput"] img {
+        max-width: min(76vw, 300px);
+    }
+    [data-testid="stCameraInput"]::after {
+        width: min(62%, 190px);
+    }
 }

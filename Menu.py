@@ -91,7 +91,7 @@ if st.session_state.tela == "inicio":
             st.session_state.tela = "termo_de_consentimento"
             st.rerun()
 
-#Session 0.25 - Termo de Consentimento
+#Session 1 - Termo de Consentimento
 if st.session_state.tela == "termo_de_consentimento":
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
@@ -138,7 +138,7 @@ if st.session_state.tela == "termo_de_consentimento":
             st.session_state.tela = "registrar_cpf"
             st.rerun()
 
-#Session 0.5 - Registro do CPF do usuário
+#Session 2 - Registro do CPF do usuário
 if st.session_state.tela == "registrar_cpf":
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
@@ -191,19 +191,37 @@ if st.session_state.tela == "registrar_cpf":
         else:
             st.error("CPF inválido. Certifique-se de digitar 11 números.")
 
-#Session 1 - Captura a face e envia para a geração de enconding
+#Session 3 - Captura a face e envia para a geração de enconding
 if st.session_state.tela == "capturar_face":
 
     #Prints de tela atual vão existir por todo o código, para facilitar a visualização de qual tela está ativa no momento
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
-    #Isso aqui é pra foto ficar no meio KKKK
-    midcol1, midcol2, midcol3 = st.columns([1, 2, 1])
+    #Foto centralizada na coluna do meio.
+    midcol1, midcol2, midcol3 = st.columns([1, 6, 1])
     container = st.container
-
+    
     with midcol2:
 
-        face = st.camera_input("Capture sua foto para gerar o encoding facial", key=f"camera_input_{st.session_state.camera_key}")
+        st.markdown(
+            """
+            <div class="camera-intro">
+                <div class="camera-eyebrow">ETAPA 3 DE 3 · AUTENTICAÇÃO</div>
+                <div class="camera-title">Posicione seu rosto</div>
+                <div class="camera-description">
+                    Fique de frente para a câmera, em um local iluminado.
+                    Quando estiver pronto, capture a imagem.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+        face = st.camera_input(
+            "Capturar foto",
+            key=f"camera_input_{st.session_state.camera_key}",
+        )
 
         if face is not None:
 
@@ -229,7 +247,7 @@ if st.session_state.tela == "capturar_face":
             st.session_state.tela = "gerar_encoding"
             st.rerun()
 
-#Session 2 - Gera os encodings e redireciona para a geração de Vouchers ou retorna para o inicio se erro
+#Session 4 - Gera os encodings e redireciona para a geração de Vouchers ou retorna para o inicio se erro
 if st.session_state.tela == "gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -253,7 +271,7 @@ if st.session_state.tela == "gerar_encoding":
         comp.wait(2)
         st.rerun()
 
-#Session 3 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
+#Session 5 - Gera os Vouchers e manda conexão para o banco de dados, depois retorna para o inicio
 if st.session_state.tela == "gerar_voucher":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -267,45 +285,56 @@ if st.session_state.tela == "gerar_voucher":
 
     with col2:
         st.title(st.session_state["voucher"])
-        st.subheader("Seu Código de Acesso Único")
+        st.subheader("Conecte-se à rede Wi-Fi usando o voucher acima.")
 
     registrada = False
-    for tentativa in range(12):
-        print(f"Menu.py - Tentativa {tentativa + 1}/12 para localizar o dispositivo...")
-        st.info(f"Procurando o dispositivo... tentativa {tentativa + 1} de 12")
+    contagem = 60
+    timer = st.empty()
+    feedback = st.empty()
 
-        try:
-            dispositivo = ctrl.IP(
-                st.session_state.controladora,
-                st.session_state["voucher"],
-            )
+    while contagem >= 0:
+        timer.markdown(
+            f'<div class="voucher-timer"><span>Tempo para se conectar</span>'
+            f'<strong>{contagem:02d}</strong><span>segundos restantes</span></div>',
+            unsafe_allow_html=True,
+        )
 
-            if dispositivo:
-                ip, hostname, mac = dispositivo
-                sql.registrar_conexao(
-                    st.session_state["id"],
-                    ip,
+        # Consulta no início e depois a cada 5 segundos, sem aumentar as chamadas à controladora.
+        if contagem % 5 == 0:
+            print(f"Menu.py - Verificando conexão; {contagem}s restantes...")
+            try:
+                dispositivo = ctrl.IP(
+                    st.session_state.controladora,
                     st.session_state["voucher"],
-                    hostname,
-                    mac,
-                    st.session_state["cpf"],
                 )
-                print(
-                    f"Menu.py - Conexão registrada: ID={st.session_state['id']}, "
-                    f"Voucher={st.session_state['voucher']}, IP={ip}, "
-                    f"Hostname={hostname}, MAC={mac}"
-                )
-                st.success(f"Conexão detectada e registrada! IP: {ip}")
-                registrada = True
-                break
 
-            print("Menu.py - IP ainda não disponível; aguardando 5 segundos...")
-        except Exception as e:
-            print(f"Menu.py - Erro ao consultar ou registrar conexão: {e}")
-            st.error("Falha ao consultar ou registrar. Consulte o terminal para ver o erro.")
+                if dispositivo:
+                    ip, hostname, mac = dispositivo
+                    sql.registrar_conexao(
+                        st.session_state["id"],
+                        ip,
+                        st.session_state["voucher"],
+                        hostname,
+                        mac,
+                        st.session_state["cpf"],
+                    )
+                    print(
+                        f"Menu.py - Conexão registrada: ID={st.session_state['id']}, "
+                        f"Voucher={st.session_state['voucher']}, IP={ip}, "
+                        f"Hostname={hostname}, MAC={mac}"
+                    )
+                    feedback.success(f"Conexão detectada e registrada! IP: {ip}")
+                    registrada = True
+                    break
+            except Exception as e:
+                print(f"Menu.py - Erro ao consultar ou registrar conexão: {e}")
+                feedback.error("Falha ao consultar ou registrar. Consulte o terminal.")
 
-        if tentativa < 11:
-            comp.wait(5)
+        if contagem == 0:
+            break
+
+        comp.wait(1)
+        contagem -= 1
 
     if not registrada:
         st.warning(
@@ -314,24 +343,40 @@ if st.session_state.tela == "gerar_voucher":
         )
 
     st.session_state.pop("voucher", None)
-    st.session_state.tela = "capturar_face"
+    st.session_state.tela = "inicio"
     st.rerun()
 
 # PROCESSO DE VERIFICAÇÃO
 
-#Session 4 - Captura a face e envia para a geração de encodings
+#Session 1 - Captura a face e envia para a geração de encodings
 if st.session_state.tela == "inicio_verificar_face":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
     #Basicamente a mesma coisa da tela de autenticação
 
-    midcol1, midcol2, midcol3 = st.columns([1, 2, 1])
+    midcol1, midcol2, midcol3 = st.columns([1, 6, 1])
     container = st.container
 
     with midcol2:
+        st.markdown(
+            """
+            <div class="camera-intro">
+                <div class="camera-eyebrow">VERIFICAÇÃO FACIAL</div>
+                <div class="camera-title">Enquadre seu rosto</div>
+                <div class="camera-description">
+                    Olhe para a câmera e mantenha o rosto dentro do quadro.
+                    Use um local bem iluminado para facilitar a verificação.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        face = st.camera_input("Capture a foto para verificar a facial", key=f"camera_input_{st.session_state.camera_key}")
+        face = st.camera_input(
+            "Capturar foto para verificar",
+            key=f"camera_input_{st.session_state.camera_key}",
+        )
 
         if face is not None:
 
@@ -358,7 +403,7 @@ if st.session_state.tela == "inicio_verificar_face":
             st.session_state.tela = "verificar_gerar_encoding"
             st.rerun()
 
-#Session 5 - Gera os encodings e redireciona para a comparação dos encodings ou retorna para o inicio se erro
+#Session 2 - Gera os encodings e redireciona para a comparação dos encodings ou retorna para o inicio se erro
 if st.session_state.tela == "verificar_gerar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
@@ -387,7 +432,7 @@ if st.session_state.tela == "verificar_gerar_encoding":
         comp.wait(2)
         st.rerun()
 
-#Session 6 - retorna o resultado para o usuário depois retorna para o inicio
+#Session 3 - retorna o resultado para o usuário depois retorna para o inicio
 if st.session_state.tela == "retornar_encoding":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
