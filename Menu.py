@@ -34,7 +34,7 @@ if "controladora" not in st.session_state:
 
 opcoes = {
     "Autenticar e gerar Voucher": "inicio",
-    "Verificar histórico facial": "inicio_verificar_face"
+    "Verificar histórico facial": "inicio_verificar"
 }
 
 selecao = st.sidebar.radio("Menu", list(opcoes.keys()))
@@ -385,8 +385,53 @@ if st.session_state.tela == "gerar_voucher":
 
 # PROCESSO DE VERIFICAÇÃO
 
+#Session 0 - Tela de inicio da verificação facial
+if st.session_state.tela == "inicio_verificar":
+
+    print(f"Menu.py - Tela atual: {st.session_state.tela}")
+
+    st.markdown(
+        """
+        <section class="welcome-card">
+            <div class="welcome-eyebrow">VERIFICAÇÃO FACIAL</div>
+            <div class="welcome-title">Verifique seu histórico de conexões</div>
+            <p class="welcome-description">
+                Capture seu rosto para verificar se há registros de conexões associadas
+                à sua identidade facial.
+            </p>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div class='section-label'>Como funciona</div>", unsafe_allow_html=True)
+    etapa1, etapa2 = st.columns(2)
+    etapas = [
+        (etapa1, "01", "Captura Facial", "Enquadre seu rosto e capture a imagem."),
+        (etapa2, "02", "Verificação", "O sistema irá verificar seu histórico."),
+    ]
+    for coluna, numero, titulo, descricao in etapas:
+        with coluna:
+            st.markdown(
+                f"""
+                <div class="step-card">
+                    <span class="step-number">{numero}</span>
+                    <div class="step-title">{titulo}</div>
+                    <div class="step-description">{descricao}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.write("")
+    _, botao_coluna, _ = st.columns([1, 2, 1])
+    with botao_coluna:
+        if st.button("Iniciar verificação facial", use_container_width=True, type="primary"):
+            st.session_state.tela = "capturar_face_verificar"
+            st.rerun()
+
 #Session 1 - Captura a face e envia para a geração de encodings
-if st.session_state.tela == "inicio_verificar_face":
+if st.session_state.tela == "capturar_face_verificar":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
@@ -437,11 +482,11 @@ if st.session_state.tela == "inicio_verificar_face":
             face = ""
 
             #Aqui vamos para a session de número #4
-            st.session_state.tela = "verificar_gerar_encoding"
+            st.session_state.tela = "gerar_verificar"
             st.rerun()
 
 #Session 2 - Gera os encodings e redireciona para a comparação dos encodings ou retorna para o inicio se erro
-if st.session_state.tela == "verificar_gerar_encoding":
+if st.session_state.tela == "gerar_verificar":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
@@ -456,7 +501,7 @@ if st.session_state.tela == "verificar_gerar_encoding":
 
         st.session_state["id"] = resultado[1]
 
-        st.session_state.tela = "retornar_encoding"
+        st.session_state.tela = "retornar_verificar"
 
         comp.wait(2)
         st.rerun()
@@ -464,13 +509,13 @@ if st.session_state.tela == "verificar_gerar_encoding":
     else:
         st.error("Nenhum rosto detectado na imagem. Por favor, tente novamente.")
         st.session_state.camera_key += 1
-        st.session_state.tela = "inicio_verificar_face"
+        st.session_state.tela = "inicio_verificar"
 
         comp.wait(2)
         st.rerun()
 
 #Session 3 - retorna o resultado para o usuário depois retorna para o inicio
-if st.session_state.tela == "retornar_encoding":
+if st.session_state.tela == "retornar_verificar":
 
     print(f"Menu.py - Tela atual: {st.session_state.tela}")
 
@@ -479,38 +524,70 @@ if st.session_state.tela == "retornar_encoding":
     print(f"Menu.py - Resultado: {resultado}")
 
     if resultado:
-
-        st.success("Facial encontrada!")
-
-        st.metric("Usuário ID", st.session_state["id"])
-        st.metric("Conexões registradas", len(resultado))
-
-        # Tabela com todas as conexões de uma vez
-        import pandas as pd
-        df = pd.DataFrame(resultado, columns=["IP", "Voucher", "Data"])
-
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "IP": st.column_config.TextColumn("🌐 IP"),
-                "Voucher": st.column_config.TextColumn("🎟️ Voucher"),
-                "Data": st.column_config.TextColumn("📅 Data"),
-            },
+        st.markdown(
+            """
+            <section class="history-heading">
+                <div class="history-eyebrow">CONSULTA CONCLUÍDA</div>
+                <h2 class="history-title">Histórico de conexões</h2>
+                <p class="history-description">Encontramos os registros associados ao reconhecimento facial.</p>
+            </section>
+            """,
+            unsafe_allow_html=True,
         )
 
-        st.write("")
+        resumo1, resumo2 = st.columns(2)
+        with resumo1:
+            st.markdown(
+                f'<div class="history-summary"><span>Cadastro</span><strong>#{escape(str(st.session_state["id"]))}</strong></div>',
+                unsafe_allow_html=True,
+            )
+        with resumo2:
+            st.markdown(
+                f'<div class="history-summary"><span>Conexões registradas</span><strong>{len(resultado)}</strong></div>',
+                unsafe_allow_html=True,
+            )
+
+        st.markdown('<div class="history-list-title">Registros recentes</div>', unsafe_allow_html=True)
+        for indice, (ip, voucher, data) in enumerate(resultado, start=1):
+            # Escapamos os valores do banco antes de inseri-los no HTML.
+            ip_html = escape(str(ip or "Não informado"))
+            voucher_html = escape(str(voucher or "Não informado"))
+            data_html = escape(str(data or "Data não informada"))
+            st.markdown(
+                f"""
+                <article class="history-card">
+                    <div class="history-card-top">
+                        <span class="history-index">CONEXÃO {indice:02d}</span>
+                        <span class="history-date">{data_html}</span>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-detail">
+                            <span>Endereço IP</span><strong>{ip_html}</strong>
+                        </div>
+                        <div class="history-detail">
+                            <span>Voucher utilizado</span><strong>{voucher_html}</strong>
+                        </div>
+                    </div>
+                </article>
+                """,
+                unsafe_allow_html=True,
+            )
 
         if st.button("🔄 Nova verificação", use_container_width=True):
-            st.session_state.tela = "inicio_verificar_face"
+            st.session_state.tela = "inicio_verificar"
             st.rerun()
 
     else:
-
-        st.warning("Facial encontrada, mas nenhuma conexão foi registrada para esta pessoa.")
-
-        comp.wait(3)
-
-        st.session_state.tela = "inicio_verificar_face"
-        st.rerun()
+        st.markdown(
+            """
+            <section class="history-empty">
+                <div class="history-empty-icon">⌕</div>
+                <h2>Cadastro encontrado</h2>
+                <p>Ainda não há conexões Wi-Fi registradas para este cadastro.</p>
+            </section>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🔄 Fazer nova verificação", use_container_width=True):
+            st.session_state.tela = "inicio_verificar"
+            st.rerun()
