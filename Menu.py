@@ -9,7 +9,7 @@ import DB_SQL as sql
 
 st.set_page_config(
     page_title="Face-Guest",
-    page_icon=str(Path(__file__).parent / "Assets" / "icone_face_guest_wifi.png"),
+    page_icon=str(Path(__file__).parent / "Assets" / "icone_face_guest.ico"),
     layout="centered",
 )
 

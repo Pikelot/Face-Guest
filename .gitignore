@@ -1,6 +1,7 @@
 config.json
 face_guest.db
 chroma_db/
+Face-Guest.ps1
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
