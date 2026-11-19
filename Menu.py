@@ -7,7 +7,11 @@ import Controladora as ctrl
 import Facial as face
 import DB_SQL as sql
 
-st.set_page_config(page_title="Face-Guest", page_icon=":smiley:", layout="centered")
+st.set_page_config(
+    page_title="Face-Guest",
+    page_icon=str(Path(__file__).parent / "Assets" / "icone_face_guest_wifi.png"),
+    layout="centered",
+)
 
 # ---------- ESTILO VISUAL (definido em estilo.css) ----------
 css = Path(__file__).with_name("estilo.css").read_text(encoding="utf-8")
